@@ -1,4 +1,4 @@
-import type { ChangeType } from "../../domain/index";
+import type { ChangeType, TransmissionStage } from "../../domain/index";
 
 export const changeNames: Record<ChangeType, string> = {
   omission: "빠짐",
@@ -19,4 +19,11 @@ export const labels: Record<string, string> = {
   source: "출처",
   detail: "도움 정보",
   negation: "아님",
+};
+
+export const mediumNames: Record<TransmissionStage["medium"], string> = {
+  notice: "안내문",
+  spoken: "말",
+  memo: "메모",
+  broadcast: "방송",
 };

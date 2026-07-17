@@ -83,6 +83,47 @@ test("안내 활동은 오답 피드백으로 잠그고 뜻 유지와 뜻 바뀜
   await expect(page.getByRole("heading", { name: "통신 기록을 열어 보세요" })).toBeVisible();
 });
 
+test("사건 개요와 안내 활동도 학생용 1·2·3 표시와 한국어 매체명을 유지한다", async ({ page }) => {
+  await startMission(page, "3~4학년 기본 항로");
+  await page.getByRole("button", { name: "비 오는 날 모임 장소" }).click();
+
+  const facts = page.locator(".facts");
+  await expect(facts).toContainText("안내문 → 말 → 메모");
+  await expect(facts).not.toContainText(/notice|spoken|memo|broadcast/);
+
+  await page.getByRole("button", { name: "정보 손실 통신소" }).click();
+  await page.getByRole("button", { name: "통신 임무 시작" }).click();
+  const expressionChoice = page.getByRole("group", { name: "1. 표현 조각 고르기" });
+  await expect(expressionChoice).toBeVisible();
+  await expect(expressionChoice.getByRole("button", { name: "각 모둠은", exact: true })).toBeVisible();
+  await expect(page.getByRole("group", { name: "2. 변화 종류 고르기" })).toBeVisible();
+  await expect(page.getByRole("group", { name: "3. 근거 뜻 고르기" })).toBeVisible();
+});
+
+test("사건 비교는 전체 진행 단계, 한국어 매체명, 1·2·3 선택 안내와 44px 터치 목표를 보여 준다", async ({ page }) => {
+  await startMission(page, "3~4학년 기본 항로");
+  await openCase(page, "비 오는 날 모임 장소");
+
+  const workflow = page.getByRole("navigation", { name: "사건 활동 진행" });
+  await expect(workflow).toBeVisible();
+  await expect(workflow.locator('[aria-current="step"]')).toHaveText("2비교");
+  await expect(page.getByRole("heading", { name: "이전 · 안내문 · 빠짐 찾기" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "다음 · 말 · 변화 찾기" })).toBeVisible();
+  const activitySteps = page.getByLabel("비교 활동 순서");
+  await expect(activitySteps.getByText("1. 표현 조각 고르기")).toBeVisible();
+  await expect(activitySteps.getByText("2. 변화 종류 고르기")).toBeVisible();
+  await expect(activitySteps.getByText("3. 근거 뜻 고르기")).toBeVisible();
+
+  expect(await page.locator(".header-actions button").evaluateAll((buttons) => buttons.every((button) => button.getBoundingClientRect().height >= 44))).toBe(true);
+  expect(await page.locator(".choice-row label, .check-grid label").evaluateAll((labels) => labels.every((label) => label.getBoundingClientRect().height >= 44))).toBe(true);
+  expect(await page.locator(".choice-row input, .check-grid input").evaluateAll((inputs) => inputs.every((input) => input.getBoundingClientRect().width >= 18 && input.getBoundingClientRect().height >= 18))).toBe(true);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator(".station-header")).toHaveClass(/mobile-header/);
+  await expect(page.locator(".station-header .header-status")).toContainText("3~4학년 기본 항로");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
 test("5~6학년 사건에서 예정이 확정으로 바뀐 것을 찾아 안전 전달문으로 복구한다", async ({ page }) => {
   await startMission(page, "5~6학년 확장 항로");
   await openCase(page, "방과 후 일정은 아직 예정");
@@ -154,5 +195,5 @@ test("사건 5의 두 안전 전달문과 접근성·화면·네트워크 경계
   await page.setViewportSize({ width: 360, height: 800 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length, cookies: document.cookie }))).toEqual({ local: 0, session: 0, cookies: "" });
-  expect([...new Set(requests.map((url) => new URL(url).origin))]).toEqual(["http://127.0.0.1:43817"]);
+  expect([...new Set(requests.map((url) => new URL(url).origin))]).toEqual([new URL(page.url()).origin]);
 });

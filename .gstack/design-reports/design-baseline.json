@@ -1,0 +1,52 @@
+{
+  "date": "2026-07-17",
+  "version": "0.1.0",
+  "viewports": ["1440x1000", "390x844"],
+  "scores": {
+    "visualHierarchy": 7,
+    "mobileUsability": 6,
+    "learningOrientation": 6,
+    "studentLanguage": 7,
+    "accessibility": 8
+  },
+  "measurements": {
+    "mobileScrollWidth": 390,
+    "mobileInnerWidth": 390,
+    "headerButtonHeight": 40,
+    "choiceLabelHeight": 39,
+    "choiceInputHeight": 13,
+    "consoleErrors": 0
+  },
+  "openFindings": [
+    "FINDING-001",
+    "FINDING-002",
+    "FINDING-003",
+    "FINDING-004",
+    "FINDING-005"
+  ],
+  "final": {
+    "version": "0.2.0",
+    "scores": {
+      "visualHierarchy": 8,
+      "mobileUsability": 9,
+      "learningOrientation": 9,
+      "studentLanguage": 9,
+      "accessibility": 9
+    },
+    "measurements": {
+      "mobileScrollWidth": 390,
+      "mobileInnerWidth": 390,
+      "headerButtonMinHeight": 44,
+      "choiceLabelMinHeight": 44,
+      "englishMediumVisible": false,
+      "consoleErrors": 0
+    },
+    "closedFindings": [
+      "FINDING-001",
+      "FINDING-002",
+      "FINDING-003",
+      "FINDING-004",
+      "FINDING-005"
+    ]
+  }
+}

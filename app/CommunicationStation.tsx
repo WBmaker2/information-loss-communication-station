@@ -8,12 +8,21 @@ import { InfoDialog } from "./components/InfoDialog";
 import { Mission } from "./components/Mission";
 import { Archive, Ledger, Relay, Result } from "./components/Outcome";
 import { Tutorial, Welcome } from "./components/WelcomeTutorial";
+import { WorkflowProgress } from "./components/WorkflowProgress";
 import { canAdvanceTransition, clearCaseSession, resolvedChangeIdsForAnswer, transitionChanges } from "./progress";
 import { buildCompletedRecord } from "./records";
 import type { CompletedCaseRecord, LearnerFinding } from "./records";
 
 type View = "welcome" | "tutorial" | "mission" | "compare" | "ledger" | "relay" | "result" | "archive";
 type Dialog = "teacher" | "updates" | null;
+
+const workflowStepByView: Partial<Record<View, number>> = {
+  mission: 0,
+  compare: 1,
+  ledger: 2,
+  relay: 3,
+  result: 4,
+};
 
 export default function CommunicationStation() {
   const [route, setRoute] = useState<GradeRoute>("grade-3-4");
@@ -36,6 +45,7 @@ export default function CommunicationStation() {
     () => TRANSMISSION_CASES.filter((entry) => entry.availableRoutes.includes(route)),
     [route],
   );
+  const workflowStep = item ? workflowStepByView[view] : undefined;
 
   useEffect(() => { if (dialog) closeRef.current?.focus(); }, [dialog]);
 
@@ -100,14 +110,17 @@ export default function CommunicationStation() {
   };
 
   return <main className="station-shell">
-    <header className="station-header">
-      <button className="wordmark" onClick={() => clearCurrentCase("welcome")}>정보 손실 통신소</button>
-      <p aria-live="polite" aria-current={item && view !== "welcome" ? "step" : undefined}>
-        {route === "grade-3-4" ? "3~4학년 기본 항로" : "5~6학년 확장 항로"}
-        {item && view !== "welcome" ? ` · 사건 ${routeCases.findIndex((entry) => entry.id === item.id) + 1}/${routeCases.length}` : ""}
+    <header className="station-header mobile-header">
+      <div className="header-top">
+        <button className="wordmark" onClick={() => clearCurrentCase("welcome")}>정보 손실 통신소</button>
+        <div className="header-actions"><button onClick={(event) => openDialog("teacher", event.currentTarget)}>교사용 안내</button><button onClick={(event) => openDialog("updates", event.currentTarget)}>업데이트 내역</button></div>
+      </div>
+      <p className="header-status" aria-live="polite">
+        <span>{route === "grade-3-4" ? "3~4학년 기본 항로" : "5~6학년 확장 항로"}</span>
+        {item && workflowStep !== undefined && <span>사건 {routeCases.findIndex((entry) => entry.id === item.id) + 1}/{routeCases.length}</span>}
       </p>
-      <div className="header-actions"><button onClick={(event) => openDialog("teacher", event.currentTarget)}>교사용 안내</button><button onClick={(event) => openDialog("updates", event.currentTarget)}>업데이트 내역</button></div>
     </header>
+    {workflowStep !== undefined && <WorkflowProgress currentStep={workflowStep} />}
     {view === "welcome" && <Welcome route={route} setRoute={(nextRoute) => { clearCurrentCase("welcome"); setRoute(nextRoute); }} onStart={() => setView("tutorial")} />}
     {view === "tutorial" && <Tutorial onDone={() => setView("mission")} />}
     {view === "mission" && <Mission cases={routeCases} current={item} completed={completedRecords.map(({ caseId }) => caseId)} onOpen={openCase} onCompare={() => setView("compare")} onBack={() => clearCurrentCase("mission")} />}
