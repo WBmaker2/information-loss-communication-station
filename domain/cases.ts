@@ -159,6 +159,7 @@ const CASE_ONE: TransmissionCase = {
   relayOptions: [
     { id: "case-1-safe-basic", text: "금요일 2시, 비가 오지 않으면 운동장에 모이고 비가 오면 체육관에서 만나요.", meaningUnitIds: ["case-1-time", "case-1-place", "case-1-rain"], unsupportedMeaningIds: [], validForAudienceIds: ["case-1-groups"] },
     { id: "case-1-safe-detail", text: "금요일 2시에 운동장 모둠 안내판 앞에서 모여요. 비가 오면 체육관으로 가요.", meaningUnitIds: ["case-1-time", "case-1-place", "case-1-rain", "case-1-board"], unsupportedMeaningIds: [], validForAudienceIds: ["case-1-groups"] },
+    { id: "case-1-unsafe-no-rain", text: "금요일 2시에 운동장에 모여요.", meaningUnitIds: ["case-1-time", "case-1-place"], unsupportedMeaningIds: [], validForAudienceIds: ["case-1-groups"] },
   ],
   requiredMeaningUnitIds: ["case-1-time", "case-1-place", "case-1-rain"],
   teacherNotes: ["자세한 위치와 우천 조건의 중요도를 비교합니다."],

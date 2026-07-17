@@ -163,6 +163,19 @@ test("사건 5의 서로 다른 안전 전달문 조합을 모두 인정한다",
   }
 });
 
+test("사건 1의 우천 조건 없는 전달문은 의도된 오답이며 콘텐츠 오류가 아니다", () => {
+  const item = TRANSMISSION_CASES[0];
+  const unsafe = item.relayOptions.find(
+    (option) => option.id === "case-1-unsafe-no-rain",
+  )!;
+
+  assert.deepEqual(validateCaseContent(item), { valid: true, errors: [] });
+  const result = validateSafeRelay(item, [unsafe.id]);
+  assert.equal(result.valid, false);
+  assert.deepEqual(result.missingMeaningUnitIds, ["case-1-rain"]);
+  assert.deepEqual(result.unsupportedMeaningIds, []);
+});
+
 test("필수 의미가 모두 있어도 근거 없는 의미가 하나면 안전 전달문을 막는다", () => {
   const item = TRANSMISSION_CASES[1];
   const valid = item.relayOptions.find((option) =>

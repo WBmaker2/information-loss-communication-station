@@ -13,5 +13,5 @@
 - `npm run typecheck`: 통과.
 - `npm run lint`: 통과.
 - `npm run build`: 통과.
-- `npm run test:e2e -- --reporter=line`: 통과: 처음에는 `reuseExistingServer: true`가 4173 포트의 다른 앱을 재사용해 시작 버튼을 찾지 못했습니다. 전용 43817 포트와 production 서버, 재사용 금지로 분리한 뒤 최종 3개 E2E가 4.9초에 통과했습니다. 사건 1의 두 빠짐부터 결과·보존 기록 완주, 5~6학년의 예정→확정 복구, 사건 5의 두 유효 안전 전달문, Tab·Enter·Space, axe, reduced-motion, 200% page scale, 360px overflow, 저장소/cookie, 동일 출처 요청을 확인했습니다.
+- `npm run test:e2e -- --reporter=line`: 통과: 처음에는 `reuseExistingServer: true`가 4173 포트의 다른 앱을 재사용해 시작 버튼을 찾지 못했습니다. 전용 43817 포트와 production 서버, 재사용 금지로 분리한 뒤 최종 4개 E2E가 6.5초에 통과했습니다. 안내 활동의 뜻 유지 오답 잠금·두 단계 완료, 사건 1의 우천 조건 누락 전달문 거부와 결과·보존 기록 완주, 5~6학년의 예정→확정 복구, 사건 5의 두 유효 안전 전달문, Tab·Enter·Space, axe, reduced-motion, 200% page scale, 360px overflow, 저장소/cookie, 동일 출처 요청을 확인했습니다.
 - `git diff --check`: 통과.

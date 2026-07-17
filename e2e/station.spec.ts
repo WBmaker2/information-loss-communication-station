@@ -44,6 +44,11 @@ test("3~4학년 사건 1의 두 빠짐을 복구해 결과와 보존 기록까�
   await answerChange(page, { segment: "비가 오면 체육관에서 만나요.", evidence: "조건 · 비가 오면 체육관" });
   await page.getByRole("button", { name: "전체 사슬 점검" }).click();
   await page.getByRole("button", { name: "안전 전달문 고르기" }).click();
+  const unsafeRelay = page.getByRole("button", { name: "금요일 2시에 운동장에 모여요." });
+  await unsafeRelay.click();
+  await expect(page.getByText("필수 뜻이 빠졌어요.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "사건 기록 완성" })).toBeDisabled();
+  await unsafeRelay.click();
   await page.getByRole("button", { name: "금요일 2시에 운동장 모둠 안내판 앞에서 모여요. 비가 오면 체육관으로 가요." }).click();
   await expect(page.getByRole("button", { name: "사건 기록 완성" })).toBeEnabled();
   await page.getByRole("button", { name: "사건 기록 완성" }).click();
@@ -52,6 +57,30 @@ test("3~4학년 사건 1의 두 빠짐을 복구해 결과와 보존 기록까�
   await page.getByRole("button", { name: "전달 보존 기록 보기" }).click();
   await expect(page.getByRole("heading", { name: "완료한 사건만 모아 봐요" })).toBeVisible();
   await expect(page.getByText("✓ 비 오는 날 모임 장소")).toBeVisible();
+});
+
+test("안내 활동은 오답 피드백으로 잠그고 뜻 유지와 뜻 바뀜을 모두 확인한다", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "통신 임무 시작" }).click();
+
+  await page.getByRole("button", { name: "모둠별로", exact: true }).click();
+  await page.getByLabel("뜻이 달라짐").check();
+  await page.getByLabel("누가 · 각 모둠").check();
+  await page.getByRole("button", { name: "판정 확인" }).click();
+  await expect(page.getByText("앞 문장과 다음 문장을 나란히 읽고, 무엇이 빠지거나 달라졌는지 찾아보세요.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "다음 비교" })).toBeDisabled();
+
+  await page.getByLabel("뜻 유지").check();
+  await page.getByRole("button", { name: "판정 확인" }).click();
+  await expect(page.getByRole("button", { name: "다음 비교" })).toBeEnabled();
+  await page.getByRole("button", { name: "다음 비교" }).click();
+  await page.getByRole("button", { name: "각자", exact: true }).click();
+  await page.getByLabel("뜻이 달라짐").check();
+  await page.getByLabel("누가 · 각 모둠").check();
+  await page.getByRole("button", { name: "판정 확인" }).click();
+  await expect(page.getByRole("button", { name: "사건 임무로" })).toBeEnabled();
+  await page.getByRole("button", { name: "사건 임무로" }).click();
+  await expect(page.getByRole("heading", { name: "통신 기록을 열어 보세요" })).toBeVisible();
 });
 
 test("5~6학년 사건에서 예정이 확정으로 바뀐 것을 찾아 안전 전달문으로 복구한다", async ({ page }) => {
