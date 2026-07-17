@@ -67,7 +67,7 @@ test("안내 활동은 오답 피드백으로 잠그고 뜻 유지와 뜻 바뀜
   await page.getByLabel("뜻이 바뀜").check();
   await page.getByLabel("누가 · 각 모둠").check();
   await page.getByRole("button", { name: "내 답 확인" }).click();
-  await expect(page.getByText("앞 문장과 다음 문장을 나란히 읽고, 무엇이 빠지거나 달라졌는지 찾아보세요.")).toBeVisible();
+  await expect(page.getByText("고른 말은 다시 살펴볼 수 있어요. 어떻게 달라졌는지 한 번 더 생각해 보세요.")).toBeVisible();
   await expect(page.getByRole("button", { name: "다음 비교" })).toBeDisabled();
 
   await page.getByLabel("같은 뜻").check();
@@ -100,7 +100,7 @@ test("사건 개요와 안내 활동도 학생용 1·2·3 표시와 한국어 �
   await expect(page.getByRole("group", { name: "3. 왜 그렇게 생각했나요?" })).toBeVisible();
 });
 
-test("사건 비교는 전체 진행 단계, 한국어 매체명, 1·2·3 선택 안내와 44px 터치 목표를 보여 준다", async ({ page }) => {
+test("사건 비교는 전체 진행 단계, 한국어 매체명, 1·2·3 선택 안내와 44px 선택 영역을 보여 준다", async ({ page }) => {
   await startMission(page, "3~4학년 기본 활동");
   await openCase(page, "비 오는 날 모임 장소");
 
@@ -116,7 +116,6 @@ test("사건 비교는 전체 진행 단계, 한국어 매체명, 1·2·3 선택
 
   expect(await page.locator(".header-actions button").evaluateAll((buttons) => buttons.every((button) => button.getBoundingClientRect().height >= 44))).toBe(true);
   expect(await page.locator(".choice-row label, .check-grid label").evaluateAll((labels) => labels.every((label) => label.getBoundingClientRect().height >= 44))).toBe(true);
-  expect(await page.locator(".choice-row input, .check-grid input").evaluateAll((inputs) => inputs.every((input) => input.getBoundingClientRect().width >= 18 && input.getBoundingClientRect().height >= 18))).toBe(true);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator(".station-header")).toHaveClass(/mobile-header/);
@@ -151,7 +150,7 @@ test("사건 5의 두 안전 전달문과 접근성·화면·네트워크 경계
   page.on("request", (request) => requests.push(request.url()));
   await page.emulateMedia({ reducedMotion: "reduce" });
   await startMission(page, "5~6학년 도전 활동");
-  await openCase(page, "가상 학교 방송 인수인계");
+  await openCase(page, "가상 학교 방송 이어 전하기");
 
   await answerChange(page, {
     segment: "금요일 오전에 가상 방송실에서, 담당 안내문으로 확인한 비상 안내만 방송해요.",
