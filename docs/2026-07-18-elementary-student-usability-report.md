@@ -16,7 +16,7 @@
 
 | 확인 | 결과 |
 | --- | --- |
-| `npm test` | 29개 통과 |
+| `npm test` | 30개 통과 |
 | `npm run typecheck` | 통과 |
 | `npm run lint` | 통과 |
 | `npm run build` | 통과 |
@@ -24,9 +24,9 @@
 
 ## 390×844 화면 캡처 상태
 
-최종 production 화면을 390×844로 직접 캡처해 [compare-mobile.png](screenshots/v0.3.0/compare-mobile.png)와 [result-mobile.png](screenshots/v0.3.0/result-mobile.png)에 저장했습니다. 두 화면에서 헤더·단계 표시·주요 카드가 정상으로 보이고, 결과 상단 잘림이 사라졌습니다.
+안전 여백 보완 뒤 최종 production 화면을 390×844로 다시 캡처해 [compare-mobile.png](screenshots/v0.3.0/compare-mobile.png)와 [result-mobile.png](screenshots/v0.3.0/result-mobile.png)에 저장했습니다. 결과 화면 상단의 16px 이상 여백 안에 wordmark·관리 버튼·활동/사건 상태·5단계 진행·결과 제목이 모두 보입니다.
 
-최종 결과 지표는 viewport `[390, 844]`, `scrollWidth` 390, 결과 높이 992, scroll `[0, 0]`입니다. 따라서 결과 화면은 이전 전달문 화면의 아래 위치를 이어받지 않고 맨 위에서 시작합니다.
+최종 결과 지표는 viewport `[390, 844]`, `scrollWidth` 390, 결과 높이 996, scroll `[0, 0]`입니다. 따라서 결과 화면은 이전 전달문 화면의 아래 위치를 이어받지 않고 맨 위에서 시작합니다.
 
 ## 교실에서 남은 확인 항목
 

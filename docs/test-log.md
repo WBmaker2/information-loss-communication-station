@@ -4,12 +4,12 @@
 
 - RED: 기존 전체 Chromium E2E를 실행해 이전 오답 피드백 문구 기대와 네이티브 체크박스의 18px 크기 검사에서 실패를 확인했습니다. 소스 점검에서 사건 5의 이전 제목 selector도 현재 학생용 제목으로 갱신했습니다.
 - GREEN: 새 피드백 문구와 `가상 학교 방송 이어 전하기` selector로 맞추고, 실제 44px 터치 영역인 레이블을 검사하도록 갱신했습니다. 최종 `npm run test:e2e -- --reporter=line`: Chromium 13개 통과(9.2초). 사건 1, 결과 화면 스크롤 복구, 쉬운 표현 금지 검사, 사건 4·5, 선택 복구, 뒤로가기, axe 심각도, reduced-motion, 360px·390px 가로 넘침, 200% 확대, 키보드, 저장소·쿠키 없음, 동일 출처 요청을 확인했습니다.
-- `npm test`: build와 Node 테스트 29개 통과.
+- `npm test`: build와 Node 테스트 30개 통과.
 - `npm run typecheck`: 통과.
 - `npm run lint`: 통과.
 - `npm run build`: 통과.
-- 390×844 production Chromium 최종 캡처를 `docs/screenshots/v0.3.0/compare-mobile.png`, `docs/screenshots/v0.3.0/result-mobile.png`에 저장했습니다. 비교·결과 화면의 헤더, 단계 표시, 주요 카드가 정상이고 결과 상단 잘림이 사라진 것을 직접 확인했습니다.
-- RED: 첫 결과 캡처의 스크롤 잔존을 재현하는 E2E와 학생 화면 금지 표현 검사를 먼저 추가했습니다. GREEN: `view` 또는 `transition`이 바뀌면 화면 맨 위로 되돌리도록 보완했습니다. 최종 결과 지표는 viewport `[390, 844]`, `scrollWidth` 390, 결과 높이 992, scroll `[0, 0]`입니다.
+- 390×844 production 최종 캡처를 `docs/screenshots/v0.3.0/compare-mobile.png`, `docs/screenshots/v0.3.0/result-mobile.png`에 새로 저장했습니다. 결과 화면의 상단 16px 이상 안전 여백 안에 wordmark·관리 버튼·활동/사건 상태·5단계 진행·결과 제목이 모두 보입니다.
+- RED: 첫 결과 캡처의 스크롤 잔존을 재현하는 E2E와 학생 화면 금지 표현 검사를 먼저 추가했습니다. GREEN: `view` 또는 `transition`이 바뀌면 화면 맨 위로 되돌리도록 보완했습니다. 최종 결과 지표는 viewport `[390, 844]`, `scrollWidth` 390, 결과 높이 996, scroll `[0, 0]`입니다.
 
 ## 2026-07-17
 
