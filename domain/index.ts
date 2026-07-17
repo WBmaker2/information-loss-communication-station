@@ -1,5 +1,5 @@
 export { TUTORIAL_CASE, TRANSMISSION_CASES } from "./cases.js";
-export { judgeStageChange } from "./judge.js";
+export { judgeStageChange, requiredSegmentIds } from "./judge.js";
 export {
   calculateMeaningLedger,
   getStageMeaningIds,

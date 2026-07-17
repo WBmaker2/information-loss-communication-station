@@ -1,3 +1,4 @@
+import { requiredSegmentIds } from "../domain/index";
 import type { StageChange, StageChangeAnswer, TransmissionCase } from "../domain/index";
 
 export interface ClearedCaseSession {
@@ -37,13 +38,18 @@ export function resolvedChangeIdsForAnswer(
   isCorrect: boolean,
 ): string[] {
   if (!isCorrect) return [];
-  const selected = new Set(answer.selectedSegmentIds);
-  const evidence = new Set(answer.evidenceMeaningUnitIds);
+  if (answer.evidenceMeaningUnitIds.length === 0) return [];
   return transitionChanges(item, transition)
     .filter((change) => change.type === answer.changeType)
-    .filter((change) => change.targetSegmentIds.every((id) => selected.has(id)))
-    .filter((change) => change.meaningUnitIds.some((id) => evidence.has(id)))
+    .filter((change) => sameMembers(answer.selectedSegmentIds, requiredSegmentIds(change)))
+    .filter((change) => answer.evidenceMeaningUnitIds.every((id) => change.meaningUnitIds.includes(id)))
     .map(({ id }) => id);
+}
+
+function sameMembers(left: string[], right: string[]): boolean {
+  const leftSet = new Set(left);
+  const rightSet = new Set(right);
+  return leftSet.size === rightSet.size && [...rightSet].every((id) => leftSet.has(id));
 }
 
 export function firstChangedStageChange(item: TransmissionCase): StageChange | undefined {

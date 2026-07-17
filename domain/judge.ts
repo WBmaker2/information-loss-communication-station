@@ -1,11 +1,19 @@
 import type {
+  StageChange,
   StageChangeAnswer,
   StageChangeJudgement,
   TransmissionCase,
 } from "./types.js";
 
-const includesEvery = (available: Set<string>, needed: string[]) =>
-  needed.every((id) => available.has(id));
+const sameMembers = (selected: string[], required: string[]) => {
+  const selectedSet = new Set(selected);
+  const requiredSet = new Set(required);
+  return selectedSet.size === requiredSet.size && [...requiredSet].every((id) => selectedSet.has(id));
+};
+
+export function requiredSegmentIds(change: StageChange): string[] {
+  return change.type === "omission" ? change.sourceSegmentIds : change.targetSegmentIds;
+}
 
 export function judgeStageChange(
   item: TransmissionCase,
@@ -22,20 +30,18 @@ export function judgeStageChange(
     };
   }
 
-  const selectedSegments = new Set(answer.selectedSegmentIds);
-  const selectedEvidence = new Set(answer.evidenceMeaningUnitIds);
   const candidates = item.expectedChanges.filter(
     (change) =>
       change.fromStageId === answer.fromStageId &&
-      change.toStageId === answer.toStageId &&
-      change.targetSegmentIds.some((id) => selectedSegments.has(id)),
+      change.toStageId === answer.toStageId,
   );
   const matchingChangeIds = candidates.map(({ id }) => id);
   const matchingType = candidates.filter((change) => change.type === answer.changeType);
   const correct = matchingType.some(
     (change) =>
-      includesEvery(selectedSegments, change.targetSegmentIds) &&
-      change.meaningUnitIds.some((id) => selectedEvidence.has(id)),
+      sameMembers(answer.selectedSegmentIds, requiredSegmentIds(change)) &&
+      answer.evidenceMeaningUnitIds.length > 0 &&
+      answer.evidenceMeaningUnitIds.every((id) => change.meaningUnitIds.includes(id)),
   );
 
   if (correct) {

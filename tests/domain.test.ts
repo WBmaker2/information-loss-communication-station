@@ -47,13 +47,39 @@ test("빠진 의미는 omission으로 판정한다", () => {
   const result = judgeStageChange(item, {
     fromStageId: change.fromStageId,
     toStageId: change.toStageId,
-    selectedSegmentIds: change.targetSegmentIds,
+    selectedSegmentIds: change.sourceSegmentIds,
     changeType: "omission",
     evidenceMeaningUnitIds: change.meaningUnitIds,
   });
 
   assert.equal(result.status, "correct");
   assert.equal(result.isCorrect, true);
+});
+
+test("빠짐에서 다음 문장의 그대로인 조각이나 관련 없는 조각을 고르면 막는다", () => {
+  const item = TRANSMISSION_CASES[0];
+  const change = item.expectedChanges.find(({ type }) => type === "omission")!;
+  for (const selectedSegmentIds of [change.targetSegmentIds, [...change.sourceSegmentIds, ...change.targetSegmentIds]]) {
+    assert.equal(judgeStageChange(item, {
+      fromStageId: change.fromStageId,
+      toStageId: change.toStageId,
+      selectedSegmentIds,
+      changeType: change.type,
+      evidenceMeaningUnitIds: change.meaningUnitIds,
+    }).isCorrect, false);
+  }
+});
+
+test("변화 근거에는 그 변화의 뜻만 고를 수 있다", () => {
+  const item = TRANSMISSION_CASES[0];
+  const change = item.expectedChanges.find(({ type }) => type === "omission")!;
+  assert.equal(judgeStageChange(item, {
+    fromStageId: change.fromStageId,
+    toStageId: change.toStageId,
+    selectedSegmentIds: change.sourceSegmentIds,
+    changeType: change.type,
+    evidenceMeaningUnitIds: [...change.meaningUnitIds, "case-1-time"],
+  }).isCorrect, false);
 });
 
 test("근거 없는 불이익 정보는 unsupported-addition으로 판정한다", () => {
@@ -110,7 +136,8 @@ test("문자열이 달라도 의미 ID 집합이 같으면 meaning-preserving으
 test("선택 순서와 중복은 변화 판정에 영향을 주지 않는다", () => {
   const item = TRANSMISSION_CASES[0];
   const change = item.expectedChanges[0];
-  const selection = [...change.targetSegmentIds, ...change.targetSegmentIds].reverse();
+  const segmentIds = change.type === "omission" ? change.sourceSegmentIds : change.targetSegmentIds;
+  const selection = [...segmentIds, ...segmentIds].reverse();
   const evidence = [...change.meaningUnitIds, ...change.meaningUnitIds].reverse();
 
   const result = judgeStageChange(item, {

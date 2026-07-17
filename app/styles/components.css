@@ -59,6 +59,11 @@ dd { margin: 0; font-weight: 700; }
 .result { max-width: 850px; }
 .result dl { display: grid; gap: .9rem; }
 .result dl div { padding: 1rem; border-left: 5px solid var(--orange); background: #fff8f3; }
+.finding-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .75rem; margin: 1rem 0; }
+.finding-groups article { padding: .75rem; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.finding-groups h3 { margin: 0 0 .45rem; font-size: 1rem; }
+.finding-groups ul { margin: 0; padding-left: 1rem; }
+.finding-groups small { display: block; color: #526a7e; }
 .archive { padding-left: 1.25rem; }
 .archive li { margin: .6rem 0; }
 .modal-backdrop { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding: 1rem; background: #19324da8; }

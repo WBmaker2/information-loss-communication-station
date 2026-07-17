@@ -9,6 +9,8 @@ import { Mission } from "./components/Mission";
 import { Archive, Ledger, Relay, Result } from "./components/Outcome";
 import { Tutorial, Welcome } from "./components/WelcomeTutorial";
 import { canAdvanceTransition, clearCaseSession, resolvedChangeIdsForAnswer, transitionChanges } from "./progress";
+import { buildCompletedRecord } from "./records";
+import type { CompletedCaseRecord, LearnerFinding } from "./records";
 
 type View = "welcome" | "tutorial" | "mission" | "compare" | "ledger" | "relay" | "result" | "archive";
 type Dialog = "teacher" | "updates" | null;
@@ -23,10 +25,12 @@ export default function CommunicationStation() {
   const [changeType, setChangeType] = useState<ChangeType>("omission");
   const [feedback, setFeedback] = useState("");
   const [relay, setRelay] = useState<string[]>([]);
-  const [completed, setCompleted] = useState<string[]>([]);
+  const [findingsByCase, setFindingsByCase] = useState<Record<string, LearnerFinding[]>>({});
+  const [completedRecords, setCompletedRecords] = useState<CompletedCaseRecord[]>([]);
   const [resolvedByCase, setResolvedByCase] = useState<Record<string, string[]>>({});
   const [dialog, setDialog] = useState<Dialog>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const openerRef = useRef<HTMLButtonElement>(null);
   const item = TRANSMISSION_CASES.find((entry) => entry.id === caseId) ?? null;
   const routeCases = useMemo(
     () => TRANSMISSION_CASES.filter((entry) => entry.availableRoutes.includes(route)),
@@ -50,7 +54,7 @@ export default function CommunicationStation() {
     setCaseId(next.id); setTransition(0); resetAnswer(); setRelay([]); setView("mission");
   };
   const checkChange = () => {
-    if (!item) return;
+    if (!item) return false;
     const answer = {
       fromStageId: item.stages[transition].id,
       toStageId: item.stages[transition + 1].id,
@@ -60,14 +64,23 @@ export default function CommunicationStation() {
     };
     const judgement = judgeStageChange(item, answer);
     const newlyResolved = resolvedChangeIdsForAnswer(item, transition, answer, judgement.isCorrect);
-    if (!judgement.isCorrect || !newlyResolved.length) { setFeedback(judgement.feedback); return; }
+    if (!judgement.isCorrect || !newlyResolved.length) { setFeedback(judgement.feedback); return false; }
     const current = resolvedByCase[item.id] ?? [];
     const nextResolved = [...new Set([...current, ...newlyResolved])];
     const needed = transitionChanges(item, transition).length;
     const found = transitionChanges(item, transition).filter((change) => nextResolved.includes(change.id)).length;
     setResolvedByCase((all) => ({ ...all, [item.id]: nextResolved }));
+    setFindingsByCase((all) => {
+      const prior = all[item.id] ?? [];
+      const additions = newlyResolved.filter((id) => !prior.some((finding) => finding.changeId === id)).map((changeId) => ({
+        changeId, type: item.expectedChanges.find((change) => change.id === changeId)!.type,
+        selectedSegmentIds: answer.selectedSegmentIds, selectedEvidenceMeaningIds: answer.evidenceMeaningUnitIds,
+      }));
+      return { ...all, [item.id]: [...prior, ...additions] };
+    });
     setSegments([]); setEvidence([]); setChangeType("omission");
     setFeedback(`${judgement.feedback} ${canAdvanceTransition(item, transition, nextResolved) ? "이 전이의 변화를 모두 찾았어요." : `이 전이에서 ${found}/${needed}개를 찾았어요.`}`);
+    return true;
   };
   const advanceComparison = () => {
     const resolved = item ? resolvedByCase[item.id] ?? [] : [];
@@ -77,6 +90,14 @@ export default function CommunicationStation() {
     }
     if (transition + 2 < item.stages.length) { setTransition(transition + 1); resetAnswer(); } else setView("ledger");
   };
+  const openDialog = (nextDialog: Exclude<Dialog, null>, opener: HTMLButtonElement) => {
+    openerRef.current = opener;
+    setDialog(nextDialog);
+  };
+  const closeDialog = () => {
+    setDialog(null);
+    queueMicrotask(() => openerRef.current?.focus());
+  };
 
   return <main className="station-shell">
     <header className="station-header">
@@ -85,16 +106,16 @@ export default function CommunicationStation() {
         {route === "grade-3-4" ? "3~4학년 기본 항로" : "5~6학년 확장 항로"}
         {item && view !== "welcome" ? ` · 사건 ${routeCases.findIndex((entry) => entry.id === item.id) + 1}/${routeCases.length}` : ""}
       </p>
-      <div className="header-actions"><button onClick={() => setDialog("teacher")}>교사용 안내</button><button onClick={() => setDialog("updates")}>업데이트 내역</button></div>
+      <div className="header-actions"><button onClick={(event) => openDialog("teacher", event.currentTarget)}>교사용 안내</button><button onClick={(event) => openDialog("updates", event.currentTarget)}>업데이트 내역</button></div>
     </header>
     {view === "welcome" && <Welcome route={route} setRoute={(nextRoute) => { clearCurrentCase("welcome"); setRoute(nextRoute); }} onStart={() => setView("tutorial")} />}
     {view === "tutorial" && <Tutorial onDone={() => setView("mission")} />}
-    {view === "mission" && <Mission cases={routeCases} current={item} completed={completed} onOpen={openCase} onCompare={() => setView("compare")} onBack={() => clearCurrentCase("mission")} />}
+    {view === "mission" && <Mission cases={routeCases} current={item} completed={completedRecords.map(({ caseId }) => caseId)} onOpen={openCase} onCompare={() => setView("compare")} onBack={() => clearCurrentCase("mission")} />}
     {view === "compare" && item && <Compare item={item} transition={transition} resolvedIds={resolvedByCase[item.id] ?? []} segments={segments} evidence={evidence} changeType={changeType} feedback={feedback} onSegment={(id) => toggle(id, segments, setSegments)} onEvidence={(id) => toggle(id, evidence, setEvidence)} onType={setChangeType} onCheck={checkChange} onNext={advanceComparison} />}
     {view === "ledger" && item && <Ledger item={item} onNext={() => setView("relay")} />}
-    {view === "relay" && item && <Relay item={item} selected={relay} onToggle={(id) => toggle(id, relay, setRelay)} onDone={() => { setCompleted((ids) => ids.includes(item.id) ? ids : [...ids, item.id]); setView("result"); }} />}
-    {view === "result" && item && <Result item={item} relay={relay} onNext={() => clearCurrentCase("mission")} onArchive={() => clearCurrentCase("archive")} />}
-    {view === "archive" && <Archive cases={TRANSMISSION_CASES} completed={completed} onMission={() => clearCurrentCase("mission")} />}
-    {dialog && <InfoDialog kind={dialog} closeRef={closeRef} onClose={() => setDialog(null)} />}
+    {view === "relay" && item && <Relay item={item} selected={relay} onToggle={(id) => toggle(id, relay, setRelay)} onDone={() => { const record = buildCompletedRecord(item, findingsByCase[item.id] ?? [], relay); setCompletedRecords((records) => [...records.filter(({ caseId }) => caseId !== item.id), record]); setView("result"); }} />}
+    {view === "result" && item && <Result item={item} relay={relay} findings={findingsByCase[item.id] ?? []} onNext={() => clearCurrentCase("mission")} onArchive={() => clearCurrentCase("archive")} />}
+    {view === "archive" && <Archive cases={TRANSMISSION_CASES} records={completedRecords} onMission={() => clearCurrentCase("mission")} />}
+    {dialog && <InfoDialog kind={dialog} closeRef={closeRef} onClose={closeDialog} />}
   </main>;
 }

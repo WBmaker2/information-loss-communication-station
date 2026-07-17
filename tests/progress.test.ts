@@ -38,6 +38,20 @@ test("올바른 답만 정확한 변화 ID를 해결하고, 같은 표현의 다
   assert.deepEqual(resolvedChangeIdsForAnswer(caseFive, transition, answer, false), []);
 });
 
+test("빠짐은 이전 문장의 사라진 조각을 고른 답만 해결한다", () => {
+  const item = TRANSMISSION_CASES[0];
+  const change = item.expectedChanges.find(({ type }) => type === "omission")!;
+  const answer = {
+    fromStageId: change.fromStageId,
+    toStageId: change.toStageId,
+    selectedSegmentIds: change.sourceSegmentIds,
+    changeType: change.type,
+    evidenceMeaningUnitIds: change.meaningUnitIds,
+  };
+  const judgement = judgeStageChange(item, answer);
+  assert.deepEqual(resolvedChangeIdsForAnswer(item, 0, answer, judgement.isCorrect), [change.id]);
+});
+
 test("사건 초기화는 현재 사건과 답안·전달문을 함께 비운다", () => {
   assert.deepEqual(clearCaseSession(), {
     caseId: null,
