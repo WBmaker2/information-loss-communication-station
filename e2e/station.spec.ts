@@ -21,7 +21,7 @@ async function startMission(page: import("playwright/test").Page, route: "3~4학
 async function openCase(page: import("playwright/test").Page, title: string) {
   await page.getByRole("button", { name: title }).focus();
   await page.keyboard.press("Space");
-  await page.getByRole("button", { name: "인접 전달문 비교하기" }).focus();
+  await page.getByRole("button", { name: "바로 다음 문장 비교하기" }).focus();
   await page.keyboard.press("Enter");
 }
 
@@ -57,6 +57,25 @@ test("3~4학년 사건 1의 두 빠짐을 복구해 결과와 완료 기록까�
   await page.getByRole("button", { name: "완료 기록 보기" }).click();
   await expect(page.getByRole("heading", { name: "완료한 사건만 모아 봐요" })).toBeVisible();
   await expect(page.getByText("✓ 비 오는 날 모임 장소")).toBeVisible();
+});
+
+test("결과 화면은 전달문 화면의 아래 스크롤 위치를 이어받지 않는다", async ({ page }) => {
+  await startMission(page, "3~4학년 기본 활동");
+  await openCase(page, "비 오는 날 모임 장소");
+
+  await answerChange(page, { segment: "모둠 안내판 앞에 모여요.", evidence: "도움 정보 · 모둠 안내판 앞" });
+  await page.getByRole("button", { name: "다음 비교" }).click();
+  await answerChange(page, { segment: "비가 오면 체육관에서 만나요.", evidence: "조건(어떤 때인지) · 비가 오면 체육관" });
+  await page.getByRole("button", { name: "처음부터 끝까지 보기" }).click();
+  await page.getByRole("button", { name: "뜻을 지킨 문장 고르기" }).click();
+  await page.getByRole("button", { name: "금요일 2시에 운동장 모둠 안내판 앞에서 모여요. 비가 오면 체육관으로 가요." }).click();
+  const finish = page.getByRole("button", { name: "활동 마치기" });
+  await expect(finish).toBeEnabled();
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await finish.click();
+  await expect(page.getByRole("heading", { name: "뜻을 지키는 전달 기록을 남겼어요" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 });
 
 test("안내 활동은 오답 피드백으로 잠그고 뜻 유지와 뜻 바뀜을 모두 확인한다", async ({ page }) => {
@@ -98,6 +117,20 @@ test("사건 개요와 안내 활동도 학생용 1·2·3 표시와 한국어 �
   await expect(expressionChoice.getByRole("button", { name: "각 모둠은", exact: true })).toBeVisible();
   await expect(page.getByRole("group", { name: "2. 어떻게 달라졌나요?" })).toBeVisible();
   await expect(page.getByRole("group", { name: "3. 왜 그렇게 생각했나요?" })).toBeVisible();
+});
+
+test("학생 화면과 업데이트 내역은 어려운 내부 표현을 보여 주지 않는다", async ({ page }) => {
+  const banned = /인접 단계|인접 전달문|표현 조각|근거 뜻|뜻 장부|원문|전이|전체 사슬 점검|전달 보존 기록|항로|안전 전달문/;
+  await page.goto("/");
+  await expect(page.locator("main")).not.toContainText(banned);
+  await startMission(page, "3~4학년 기본 활동");
+  await page.getByRole("button", { name: "비 오는 날 모임 장소" }).click();
+  await expect(page.locator("main")).not.toContainText(banned);
+  await page.getByRole("button", { name: "바로 다음 문장 비교하기" }).click();
+  await expect(page.getByRole("heading", { name: "중요한 내용" })).toBeVisible();
+  await expect(page.locator("main")).not.toContainText(banned);
+  await page.getByRole("button", { name: "업데이트 내역" }).click();
+  await expect(page.getByRole("dialog")).not.toContainText(banned);
 });
 
 test("사건 비교는 전체 진행 단계, 한국어 매체명, 1·2·3 선택 안내와 44px 선택 영역을 보여 준다", async ({ page }) => {
@@ -287,10 +320,10 @@ test("뒤로가기: 연습은 시작 화면으로, 비교는 사건 설명으로
   await page.getByRole("button", { name: "연습 시작" }).click();
   await page.getByRole("button", { name: "연습 활동 건너뛰기" }).click();
   await page.getByRole("button", { name: "비 오는 날 모임 장소" }).click();
-  await page.getByRole("button", { name: "인접 전달문 비교하기" }).click();
+  await page.getByRole("button", { name: "바로 다음 문장 비교하기" }).click();
   await page.getByRole("button", { name: "사건 설명으로" }).click();
   await expect(page.getByRole("heading", { name: "비 오는 날 모임 장소" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "인접 전달문 비교하기" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "바로 다음 문장 비교하기" })).toBeVisible();
 });
 
 test("뒤로가기: 비교에서 찾은 변화는 유지하고 아직 확인하지 않은 답만 비운다", async ({ page }) => {
@@ -307,7 +340,7 @@ test("뒤로가기: 비교에서 찾은 변화는 유지하고 아직 확인하�
   await page.getByRole("button", { name: "내 답 확인" }).click();
   await expect(page.locator(".feedback")).not.toHaveText("");
   await page.getByRole("button", { name: "사건 설명으로" }).click();
-  await page.getByRole("button", { name: "인접 전달문 비교하기" }).click();
+  await page.getByRole("button", { name: "바로 다음 문장 비교하기" }).click();
 
   await expect(page.getByText("찾은 변화 1/1")).toBeVisible();
   await expect(page.getByText("문장 선택 0개 · 이유 선택 0개")).toBeVisible();

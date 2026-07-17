@@ -30,7 +30,7 @@ test("서버는 정보 손실 통신소 환영 화면을 렌더링한다", async
 
 test("제품 파일은 starter 흔적, 영구 저장, 자유 입력 없이 작게 분리되어 있다", async () => {
   const root = new URL("../", import.meta.url);
-  const [page, layout, packageJson, cases, appSource, globalCss, missionSource, compareSource, tutorialSource, sharedSource] = await Promise.all([
+  const [page, layout, packageJson, cases, appSource, globalCss, missionSource, compareSource, tutorialSource, infoDialogSource, sharedSource] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
@@ -40,6 +40,7 @@ test("제품 파일은 starter 흔적, 영구 저장, 자유 입력 없이 작�
     readFile(new URL("../app/components/Mission.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/Compare.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/WelcomeTutorial.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/InfoDialog.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/shared.ts", import.meta.url), "utf8"),
   ]);
   assert.doesNotMatch(page + layout + packageJson, /_sites-preview|Starter Project|react-loading-skeleton|codex-preview/);
@@ -47,6 +48,9 @@ test("제품 파일은 starter 흔적, 영구 저장, 자유 입력 없이 작�
   assert.doesNotMatch(appSource, /localStorage|sessionStorage|indexedDB|document\.cookie|<input[^>]+type=["']text/i);
   assert.match(appSource, /clearCurrentCase\("mission"\)/);
   assert.match(missionSource, /onClick=\{onBack\}>사건 목록으로/);
+  assert.match(missionSource, /바로 다음 문장 비교하기/);
+  assert.match(compareSource, /중요한 내용/);
+  assert.match(tutorialSource, /이유를 찾아/);
   assert.match(appSource, /\.\/components\/Compare/);
   assert.match(appSource, /\.\/components\/Outcome/);
   assert.match(globalCss, /\.\/styles\/base\.css/);
@@ -65,6 +69,7 @@ test("제품 파일은 starter 흔적, 영구 저장, 자유 입력 없이 작�
   assert.match(sharedSource, /certainty: "확실성\(예정인지 확정인지\)"/);
   assert.doesNotMatch(sharedSource, /omission: "빠짐"|근거 없는 추가|뜻이 달라짐|뜻 유지/);
   assert.doesNotMatch(tutorialSource + appSource, /기본 항로|확장 항로|오늘의 항로|이 전이/);
+  assert.doesNotMatch(missionSource + compareSource + tutorialSource + infoDialogSource, /인접 단계|인접 전달문|표현 조각|근거 뜻|뜻 장부|원문|전이|전체 사슬 점검|전달 보존 기록|항로|안전 전달문/);
   assert.match(cases, /가상 학교 방송 이어 전하기/);
   assert.match(cases, /CASE_ONE[\s\S]*CASE_FIVE/);
   assert.match(cases, /grade-3-4/);

@@ -48,6 +48,7 @@ export default function CommunicationStation() {
   const workflowStep = item ? workflowStepByView[view] : undefined;
 
   useEffect(() => { if (dialog) closeRef.current?.focus(); }, [dialog]);
+  useEffect(() => { window.scrollTo(0, 0); }, [view, transition]);
 
   const toggle = (id: string, values: string[], save: (next: string[]) => void) =>
     save(values.includes(id) ? values.filter((value) => value !== id) : [...values, id]);
