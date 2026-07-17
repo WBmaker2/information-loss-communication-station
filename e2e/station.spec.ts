@@ -33,7 +33,7 @@ async function answerChange(page: import("playwright/test").Page, answer: Change
   await expect(page.getByText("잘 찾았어요. 고른 말과 이유가 서로 맞아요.")).toBeVisible();
 }
 
-test("3~4학년 사건 1의 두 빠짐을 복구해 결과와 보존 기록까지 완성한다", async ({ page }) => {
+test("3~4학년 사건 1의 두 빠짐을 복구해 결과와 완료 기록까지 완성한다", async ({ page }) => {
   await startMission(page, "3~4학년 기본 활동");
   await openCase(page, "비 오는 날 모임 장소");
 
@@ -41,20 +41,20 @@ test("3~4학년 사건 1의 두 빠짐을 복구해 결과와 보존 기록까�
   await expect(page.getByRole("button", { name: "다음 비교" })).toBeEnabled();
   await page.getByRole("button", { name: "다음 비교" }).focus();
   await page.keyboard.press("Enter");
-  await answerChange(page, { segment: "비가 오면 체육관에서 만나요.", evidence: "조건 · 비가 오면 체육관" });
+  await answerChange(page, { segment: "비가 오면 체육관에서 만나요.", evidence: "조건(어떤 때인지) · 비가 오면 체육관" });
   await page.getByRole("button", { name: "처음부터 끝까지 보기" }).click();
-  await page.getByRole("button", { name: "안전 전달문 고르기" }).click();
+  await page.getByRole("button", { name: "뜻을 지킨 문장 고르기" }).click();
   const unsafeRelay = page.getByRole("button", { name: "금요일 2시에 운동장에 모여요." });
   await unsafeRelay.click();
-  await expect(page.getByText("필수 뜻이 빠졌어요.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "사건 기록 완성" })).toBeDisabled();
+  await expect(page.getByText("아직 빠진 중요한 뜻: 조건(어떤 때인지).")).toBeVisible();
+  await expect(page.getByRole("button", { name: "활동 마치기" })).toBeDisabled();
   await unsafeRelay.click();
   await page.getByRole("button", { name: "금요일 2시에 운동장 모둠 안내판 앞에서 모여요. 비가 오면 체육관으로 가요." }).click();
-  await expect(page.getByRole("button", { name: "사건 기록 완성" })).toBeEnabled();
-  await page.getByRole("button", { name: "사건 기록 완성" }).click();
+  await expect(page.getByRole("button", { name: "활동 마치기" })).toBeEnabled();
+  await page.getByRole("button", { name: "활동 마치기" }).click();
   await expect(page.getByRole("heading", { name: "뜻을 지키는 전달 기록을 남겼어요" })).toBeVisible();
   await expect(page.getByText("비가 올 때만 체육관으로 간다는 조건이 빠졌어요.")).toBeVisible();
-  await page.getByRole("button", { name: "전달 보존 기록 보기" }).click();
+  await page.getByRole("button", { name: "완료 기록 보기" }).click();
   await expect(page.getByRole("heading", { name: "완료한 사건만 모아 봐요" })).toBeVisible();
   await expect(page.getByText("✓ 비 오는 날 모임 장소")).toBeVisible();
 });
@@ -130,18 +130,18 @@ test("5~6학년 사건에서 예정이 확정으로 바뀐 것을 찾아 안전 
 
   await answerChange(page, {
     segment: "다음 주 방과 후 일정은 화요일로 바뀔 예정이에요. 월요일에 담당 선생님 안내로 최종 확인해요.",
-    evidence: "출처 · 담당 선생님 안내",
+    evidence: "출처(누가 알려 줬는지) · 담당 선생님 안내",
   });
   await page.getByRole("button", { name: "다음 비교" }).click();
   await answerChange(page, {
     segment: "다음 주 방과 후 일정은 화요일로 확정됐고 월요일에 확인해요.",
     type: "뜻이 바뀜",
-    evidence: "확실성 · 예정",
+    evidence: "확실성(예정인지 확정인지) · 예정(아직 바뀔 수 있음)",
   });
   await page.getByRole("button", { name: "처음부터 끝까지 보기" }).click();
-  await page.getByRole("button", { name: "안전 전달문 고르기" }).click();
+  await page.getByRole("button", { name: "뜻을 지킨 문장 고르기" }).click();
   await page.getByRole("button", { name: "다음 주 방과 후 일정은 화요일로 바뀔 예정이에요. 월요일에 담당 선생님 안내로 최종 확인해요." }).click();
-  await page.getByRole("button", { name: "사건 기록 완성" }).click();
+  await page.getByRole("button", { name: "활동 마치기" }).click();
   await expect(page.getByText("예정이 확정으로 바뀌어 확실한 정도가 달라졌어요.")).toBeVisible();
   await expect(page.getByText("담당 선생님 안내로 최종 확인해요.")).toBeVisible();
 });
@@ -161,7 +161,7 @@ test("사건 5의 두 안전 전달문과 접근성·화면·네트워크 경계
   await page.getByRole("button", { name: "다음 비교" }).click();
   await answerChange(page, {
     segment: "금요일 오전에 가상 방송실에서, 담당 안내문으로 확인한 비상 안내만 방송해요.",
-    evidence: "조건 · 비상 안내가 있을 때만",
+    evidence: "조건(어떤 때인지) · 비상 안내가 있을 때만",
   });
   await answerChange(page, {
     segment: "금요일 오후 가상 방송실에서 방송 내용을 전달해요.",
@@ -174,15 +174,15 @@ test("사건 5의 두 안전 전달문과 접근성·화면·네트워크 경계
     evidence: "도움 정보 · 손전등 준비",
   });
   await page.getByRole("button", { name: "처음부터 끝까지 보기" }).click();
-  await page.getByRole("button", { name: "안전 전달문 고르기" }).click();
+  await page.getByRole("button", { name: "뜻을 지킨 문장 고르기" }).click();
 
   const oneSentence = page.getByRole("button", { name: "비상 안내가 있을 때만 담당 안내문에서 확인된 내용을 금요일 오전 가상 방송실에서 방송으로 전달해요." });
   const twoSentences = page.getByRole("button", { name: "금요일 오전 가상 방송실에서 방송 내용을 전달해요. 비상 안내가 있을 때 담당 안내문으로 확인한 내용만 전해요." });
   await oneSentence.click();
-  await expect(page.getByRole("button", { name: "사건 기록 완성" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "활동 마치기" })).toBeEnabled();
   await oneSentence.click();
   await twoSentences.click();
-  await expect(page.getByRole("button", { name: "사건 기록 완성" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "활동 마치기" })).toBeEnabled();
 
   const violations = await new AxeBuilder({ page: page as never }).withTags(["wcag2a", "wcag2aa"]).analyze();
   expect(violations.violations.filter((item) => ["critical", "serious"].includes(item.impact ?? ""))).toEqual([]);
@@ -237,6 +237,40 @@ test("선택 복구: 답을 확인하기 전 다음 버튼은 안내와 연결�
   await expect(compareNext).toBeDisabled();
   await expect(page.getByText("먼저 내 답 확인을 눌러요.")).toBeVisible();
   await expect(compareNext).toHaveAttribute("aria-describedby", "compare-next-guidance");
+});
+
+test("전체 변화 보기와 전달문 선택 뒤로가기는 찾은 변화와 완료 기록을 유지한다", async ({ page }) => {
+  await startMission(page, "3~4학년 기본 활동");
+  await openCase(page, "비 오는 날 모임 장소");
+
+  await answerChange(page, { segment: "모둠 안내판 앞에 모여요.", evidence: "도움 정보 · 모둠 안내판 앞" });
+  await page.getByRole("button", { name: "다음 비교" }).click();
+  await answerChange(page, { segment: "비가 오면 체육관에서 만나요.", evidence: "조건(어떤 때인지) · 비가 오면 체육관" });
+  await page.getByRole("button", { name: "처음부터 끝까지 보기" }).click();
+
+  await expect(page.getByRole("heading", { name: "처음 문장에서 마지막 문장까지" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "비교로 돌아가기" })).toBeVisible();
+  await page.getByRole("button", { name: "비교로 돌아가기" }).click();
+  await expect(page.getByText("찾은 변화 1/1")).toBeVisible();
+  await page.getByRole("button", { name: "처음부터 끝까지 보기" }).click();
+  await page.getByRole("button", { name: "뜻을 지킨 문장 고르기" }).click();
+
+  const finish = page.getByRole("button", { name: "활동 마치기" });
+  await expect(finish).toBeDisabled();
+  await expect(page.getByText("뜻을 모두 지킨 문장을 골라야 활동을 마칠 수 있어요.")).toBeVisible();
+  await expect(finish).toHaveAttribute("aria-describedby", "relay-finish-help");
+  await page.getByRole("button", { name: "전체 변화 다시 보기" }).click();
+  await expect(page.getByRole("heading", { name: "처음 문장에서 마지막 문장까지" })).toBeVisible();
+  await page.getByRole("button", { name: "뜻을 지킨 문장 고르기" }).click();
+
+  await page.getByRole("button", { name: "금요일 2시에 운동장 모둠 안내판 앞에서 모여요. 비가 오면 체육관으로 가요." }).click();
+  await finish.click();
+  await expect(page.getByText("내가 찾은 변화")).toBeVisible();
+  await expect(page.locator(".finding-groups article")).toHaveCount(1);
+  await expect(page.getByText("확인한 변화가 없어요.")).toHaveCount(0);
+  await expect(page.getByText("이유:").first()).toBeVisible();
+  await page.getByRole("button", { name: "완료 기록 보기" }).click();
+  await expect(page.getByText("✓ 비 오는 날 모임 장소")).toBeVisible();
 });
 
 test("뒤로가기: 연습은 시작 화면으로, 비교는 사건 설명으로 돌아간다", async ({ page }) => {
