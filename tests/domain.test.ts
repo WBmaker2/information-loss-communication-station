@@ -150,6 +150,16 @@ test("필수 의미가 모두 있어도 근거 없는 의미가 하나면 안전
   assert.deepEqual(result.unsupportedMeaningIds, unsafe.unsupportedMeaningIds);
 });
 
+test("안전 전달문 메타데이터가 비어 있어도 원문에 없는 의미를 막는다", () => {
+  const item = structuredClone(TRANSMISSION_CASES[1]);
+  const valid = item.relayOptions.find((option) => option.id === "case-2-safe")!;
+  valid.meaningUnitIds.push("case-2-penalty");
+
+  const result = validateSafeRelay(item, [valid.id]);
+  assert.equal(result.valid, false);
+  assert.deepEqual(result.unsupportedMeaningIds, ["case-2-penalty"]);
+});
+
 test("의미 장부는 원문과 비교해 보존, 누락, 추가를 계산한다", () => {
   const item = TRANSMISSION_CASES[4];
   const finalLedger = calculateMeaningLedger(item).at(-1)!;
@@ -166,4 +176,28 @@ test("잘못된 단계 순서는 콘텐츠 오류로 검출한다", () => {
   const result = validateCaseContent(invalid);
   assert.equal(result.valid, false);
   assert.ok(result.errors.some((error) => error.includes("stage-order")));
+});
+
+test("존재하지 않는 바꾸어 쓰기 조각 참조는 콘텐츠 오류로 검출한다", () => {
+  const invalid = structuredClone(TRANSMISSION_CASES[0]);
+  invalid.meaningUnits[0].allowedParaphraseIds.push("missing-phrase");
+
+  const result = validateCaseContent(invalid);
+  assert.equal(result.valid, false);
+  assert.ok(
+    result.errors.includes(
+      "unknown-allowed-paraphrase:case-1-time:missing-phrase",
+    ),
+  );
+});
+
+test("존재하지 않는 전달 대상 참조는 콘텐츠 오류로 검출한다", () => {
+  const invalid = structuredClone(TRANSMISSION_CASES[0]);
+  invalid.relayOptions[0].validForAudienceIds.push("missing-audience");
+
+  const result = validateCaseContent(invalid);
+  assert.equal(result.valid, false);
+  assert.ok(
+    result.errors.includes("unknown-relay-audience:case-1-safe-basic:missing-audience"),
+  );
 });

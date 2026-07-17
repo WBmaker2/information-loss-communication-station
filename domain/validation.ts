@@ -35,8 +35,22 @@ export function validateCaseContent(item: TransmissionCase): ContentValidationRe
   const meaningIds = new Set(item.meaningUnits.map(({ id }) => id));
   const stageIds = new Set(item.stages.map(({ id }) => id));
   const segmentIds = new Set(item.stages.flatMap((stage) => stage.segments.map(({ id }) => id)));
+  const relayOptionIds = new Set(item.relayOptions.map(({ id }) => id));
+  const selectableExpressionIds = new Set([...segmentIds, ...relayOptionIds]);
+  const audienceIds = new Set([
+    item.audienceId,
+    ...item.stages.map((stage) => stage.audienceRole),
+  ]);
   const firstStage = ordered[0];
   const originalIds = new Set(firstStage?.expressedMeaningUnitIds ?? []);
+
+  for (const meaning of item.meaningUnits) {
+    for (const paraphraseId of meaning.allowedParaphraseIds) {
+      if (!selectableExpressionIds.has(paraphraseId)) {
+        errors.push(`unknown-allowed-paraphrase:${meaning.id}:${paraphraseId}`);
+      }
+    }
+  }
 
   for (const id of item.requiredMeaningUnitIds) {
     if (!meaningIds.has(id)) errors.push(`unknown-required-meaning:${id}`);
@@ -101,6 +115,17 @@ export function validateCaseContent(item: TransmissionCase): ContentValidationRe
     for (const id of [...option.meaningUnitIds, ...option.unsupportedMeaningIds]) {
       if (!meaningIds.has(id)) errors.push(`unknown-relay-meaning:${option.id}:${id}`);
     }
+    const actualUnsupportedMeaningIds = option.meaningUnitIds.filter(
+      (id) => !originalIds.has(id),
+    );
+    if (!sameMembers(actualUnsupportedMeaningIds, option.unsupportedMeaningIds)) {
+      errors.push(`relay-unsupported-metadata-mismatch:${option.id}`);
+    }
+    for (const audienceId of option.validForAudienceIds) {
+      if (!audienceIds.has(audienceId)) {
+        errors.push(`unknown-relay-audience:${option.id}:${audienceId}`);
+      }
+    }
   }
   if (!item.relayOptions.some((option) => validateSafeRelay(item, [option.id]).valid)) {
     errors.push("missing-safe-relay");
@@ -116,7 +141,10 @@ export function validateSafeRelay(
   const selectedIds = new Set(selectedOptionIds);
   const selected = item.relayOptions.filter((option) => selectedIds.has(option.id));
   const meaningIds = unique(selected.flatMap((option) => option.meaningUnitIds));
-  const unsupportedMeaningIds = unique(selected.flatMap((option) => option.unsupportedMeaningIds));
+  const originalMeaningIds = new Set(
+    item.stages.find((stage) => stage.order === 0)?.expressedMeaningUnitIds ?? [],
+  );
+  const unsupportedMeaningIds = meaningIds.filter((id) => !originalMeaningIds.has(id));
   const meaningSet = new Set(meaningIds);
   const missingMeaningUnitIds = item.requiredMeaningUnitIds.filter((id) => !meaningSet.has(id));
   const invalidAudienceOptionIds = selected

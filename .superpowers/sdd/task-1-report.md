@@ -69,3 +69,47 @@ pre-existing Cloudflare worker files because `cloudflare:workers`, `Fetcher`,
 and `D1Database` types are not configured. The focused domain compilation,
 project build, current tests, and lint all pass. The build also emits existing
 Node `punycode` deprecation and vinext route-classification warnings.
+
+## Reviewer fix: relay provenance and reference validation
+
+### Changes
+
+- Safe relay validation now derives unsupported meanings from the selected
+  option meanings minus the original-stage meanings; it no longer trusts the
+  option metadata as the source of truth.
+- Content validation now rejects relay options whose declared unsupported
+  meanings differ from that computed set.
+- Content validation now validates `allowedParaphraseIds` against selectable
+  phrase-segment or relay-option IDs, and `validForAudienceIds` against the
+  case audience or a stage audience role.
+- Corrected the event 5 unsafe relay metadata to declare both non-original
+  meanings that its text selects.
+
+### Focused TDD evidence
+
+RED command:
+
+```sh
+rm -rf .test-domain && ./node_modules/.bin/tsc --noEmit false --outDir .test-domain --module NodeNext --moduleResolution NodeNext --target ES2022 tests/domain.test.ts && node --test .test-domain/tests/domain.test.js
+```
+
+Before the fix, 3 of 14 tests failed as expected: a known non-original meaning
+with empty unsupported metadata passed safe-relay validation, and invalid
+paraphrase/audience references passed content validation.
+
+After the fix, the same focused command passed:
+
+```text
+tests 14
+pass 14
+fail 0
+```
+
+`npm test` passed its 2 current tests and `npm run lint` passed after the fix.
+
+### Fix files changed
+
+- `domain/cases.ts`
+- `domain/validation.ts`
+- `tests/domain.test.ts`
+- `.superpowers/sdd/task-1-report.md`

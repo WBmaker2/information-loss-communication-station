@@ -293,7 +293,7 @@ const CASE_FIVE: TransmissionCase = {
   relayOptions: [
     { id: "case-5-safe-one-sentence", text: "비상 안내가 있을 때만 담당 안내문에서 확인된 내용을 금요일 오전 가상 방송실에서 방송으로 전달해요.", meaningUnitIds: ["case-5-broadcast", "case-5-friday-morning", "case-5-studio", "case-5-condition", "case-5-source", "case-5-confirmed"], unsupportedMeaningIds: [], validForAudienceIds: ["case-5-broadcast-team"] },
     { id: "case-5-safe-two-sentences", text: "금요일 오전 가상 방송실에서 방송 내용을 전달해요. 비상 안내가 있을 때 담당 안내문으로 확인한 내용만 전해요.", meaningUnitIds: ["case-5-broadcast", "case-5-friday-morning", "case-5-studio", "case-5-condition", "case-5-source", "case-5-confirmed"], unsupportedMeaningIds: [], validForAudienceIds: ["case-5-broadcast-team"] },
-    { id: "case-5-unsafe", text: "손전등을 준비하고 오후 방송을 해요.", meaningUnitIds: ["case-5-broadcast", "case-5-friday-afternoon", "case-5-flashlight"], unsupportedMeaningIds: ["case-5-flashlight"], validForAudienceIds: ["case-5-broadcast-team"] },
+    { id: "case-5-unsafe", text: "손전등을 준비하고 오후 방송을 해요.", meaningUnitIds: ["case-5-broadcast", "case-5-friday-afternoon", "case-5-flashlight"], unsupportedMeaningIds: ["case-5-friday-afternoon", "case-5-flashlight"], validForAudienceIds: ["case-5-broadcast-team"] },
   ],
   requiredMeaningUnitIds: ["case-5-broadcast", "case-5-friday-morning", "case-5-studio", "case-5-condition", "case-5-source", "case-5-confirmed"],
   teacherNotes: ["처음 변한 단계와 누적된 손실을 구분합니다."],
