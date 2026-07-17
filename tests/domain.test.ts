@@ -24,6 +24,15 @@ test("검수된 안내 활동과 고정 사건은 참조 ID 및 단계 규칙을
   }
 });
 
+test("학생에게 보이는 변화 설명에는 어려운 내부 표현이 없다", () => {
+  const banned = /원문|인접 단계|표현 조각|근거 뜻|(?:^|[\s(])전이(?:$|[\s),.]|[가를는의에])|전체 사슬 점검|전달 보존 기록/;
+  for (const item of TRANSMISSION_CASES) {
+    for (const change of item.expectedChanges) {
+      assert.doesNotMatch(change.explanation, banned, `${item.id}:${change.id}`);
+    }
+  }
+});
+
 test("인접하지 않은 단계를 비교하면 학생 오답이 아닌 콘텐츠 입력 오류로 돌려준다", () => {
   const item = TRANSMISSION_CASES[0];
   const change = item.expectedChanges[0];

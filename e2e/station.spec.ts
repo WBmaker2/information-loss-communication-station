@@ -152,6 +152,7 @@ test("사건 비교는 전체 진행 단계, 한국어 매체명, 1·2·3 선택
 
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator(".station-header")).toHaveClass(/mobile-header/);
+  expect(await page.locator(".station-header").evaluate((header) => header.getBoundingClientRect().top)).toBeGreaterThanOrEqual(16);
   await expect(page.locator(".station-header .header-status")).toContainText("3~4학년 기본 활동");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });

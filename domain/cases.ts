@@ -191,7 +191,7 @@ const CASE_TWO: TransmissionCase = {
   ],
   expectedChanges: [
     { id: "case-2-preserving", fromStageId: "case-2-original", toStageId: "case-2-first-relay", sourceSegmentIds: ["case-2-original-all"], targetSegmentIds: ["case-2-first-all"], meaningUnitIds: ["case-2-books", "case-2-wednesday", "case-2-box"], type: "meaning-preserving", explanation: "표현은 달라도 반납할 책, 기한, 장소는 같아요." },
-    { id: "case-2-penalty-addition", fromStageId: "case-2-first-relay", toStageId: "case-2-second-relay", sourceSegmentIds: ["case-2-first-all"], targetSegmentIds: ["case-2-second-penalty"], meaningUnitIds: ["case-2-penalty"], type: "unsupported-addition", explanation: "대출 불이익은 앞 전달문과 원문에 근거가 없어요." },
+    { id: "case-2-penalty-addition", fromStageId: "case-2-first-relay", toStageId: "case-2-second-relay", sourceSegmentIds: ["case-2-first-all"], targetSegmentIds: ["case-2-second-penalty"], meaningUnitIds: ["case-2-penalty"], type: "unsupported-addition", explanation: "대출 불이익은 앞 전달문과 처음 문장에 없던 내용이에요." },
   ],
   relayOptions: [
     { id: "case-2-safe", text: "빌린 책을 수요일까지 도서관 반납함에 넣어 주세요.", meaningUnitIds: ["case-2-books", "case-2-wednesday", "case-2-box"], unsupportedMeaningIds: [], validForAudienceIds: ["case-2-borrowers"] },
@@ -289,7 +289,7 @@ const CASE_FIVE: TransmissionCase = {
     { id: "case-5-preserving", fromStageId: "case-5-original", toStageId: "case-5-memo", sourceSegmentIds: ["case-5-original-all"], targetSegmentIds: ["case-5-memo-all"], meaningUnitIds: ["case-5-broadcast", "case-5-friday-morning", "case-5-studio", "case-5-condition", "case-5-source", "case-5-confirmed"], type: "meaning-preserving", explanation: "문장 순서는 달라도 여섯 뜻 조각이 모두 같아요." },
     { id: "case-5-condition-omission", fromStageId: "case-5-memo", toStageId: "case-5-draft", sourceSegmentIds: ["case-5-memo-all"], targetSegmentIds: ["case-5-draft-main"], meaningUnitIds: ["case-5-condition"], type: "omission", explanation: "비상 안내가 있을 때만 한다는 조건이 빠졌어요." },
     { id: "case-5-time-shift", fromStageId: "case-5-memo", toStageId: "case-5-draft", sourceSegmentIds: ["case-5-memo-all"], targetSegmentIds: ["case-5-draft-main"], meaningUnitIds: ["case-5-friday-morning", "case-5-friday-afternoon"], type: "meaning-shift", explanation: "금요일 오전이 오후로 바뀌었어요." },
-    { id: "case-5-flashlight-addition", fromStageId: "case-5-memo", toStageId: "case-5-draft", sourceSegmentIds: ["case-5-memo-all"], targetSegmentIds: ["case-5-draft-flashlight"], meaningUnitIds: ["case-5-flashlight"], type: "unsupported-addition", explanation: "손전등 준비는 앞 전달문과 원문에 근거가 없어요." },
+    { id: "case-5-flashlight-addition", fromStageId: "case-5-memo", toStageId: "case-5-draft", sourceSegmentIds: ["case-5-memo-all"], targetSegmentIds: ["case-5-draft-flashlight"], meaningUnitIds: ["case-5-flashlight"], type: "unsupported-addition", explanation: "손전등 준비는 앞 전달문과 처음 문장에 없던 내용이에요." },
   ],
   relayOptions: [
     { id: "case-5-safe-one-sentence", text: "비상 안내가 있을 때만 담당 안내문에서 확인된 내용을 금요일 오전 가상 방송실에서 방송으로 전달해요.", meaningUnitIds: ["case-5-broadcast", "case-5-friday-morning", "case-5-studio", "case-5-condition", "case-5-source", "case-5-confirmed"], unsupportedMeaningIds: [], validForAudienceIds: ["case-5-broadcast-team"] },
