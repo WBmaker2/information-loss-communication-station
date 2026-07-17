@@ -54,6 +54,14 @@ test("답안 상태에 따라 학생이 고칠 수 있는 피드백을 돌려준
   assert.equal(empty.feedback, "먼저 달라진 말을 하나 고르고, 그 이유도 골라 보세요.");
   assert.deepEqual(empty.matchingChangeIds, [change.id]);
 
+  const missingReason = judgeStageChange(item, {
+    ...answer,
+    selectedSegmentIds: change.sourceSegmentIds,
+    evidenceMeaningUnitIds: [],
+  });
+  assert.equal(missingReason.feedback, "먼저 달라진 말을 하나 고르고, 그 이유도 골라 보세요.");
+  assert.deepEqual(missingReason.matchingChangeIds, [change.id]);
+
   const tooMany = judgeStageChange(item, {
     ...answer,
     selectedSegmentIds: [...change.sourceSegmentIds, ...change.targetSegmentIds],
@@ -68,6 +76,15 @@ test("답안 상태에 따라 학생이 고칠 수 있는 피드백을 돌려준
   });
   assert.equal(wrongType.feedback, "고른 말은 다시 살펴볼 수 있어요. 어떻게 달라졌는지 한 번 더 생각해 보세요.");
   assert.deepEqual(wrongType.matchingChangeIds, [change.id]);
+
+  const unrelatedWrongType = judgeStageChange(item, {
+    ...answer,
+    selectedSegmentIds: change.targetSegmentIds,
+    changeType: "meaning-shift",
+    evidenceMeaningUnitIds: ["case-1-time"],
+  });
+  assert.equal(unrelatedWrongType.feedback, "고른 말과 이유를 다시 살펴보고 한 번 더 골라 보세요.");
+  assert.deepEqual(unrelatedWrongType.matchingChangeIds, [change.id]);
 
   const correct = judgeStageChange(item, {
     ...answer,

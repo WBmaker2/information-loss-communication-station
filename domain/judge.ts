@@ -36,45 +36,31 @@ export function judgeStageChange(
       change.toStageId === answer.toStageId,
   );
   const matchingChangeIds = candidates.map(({ id }) => id);
-  const matchingType = candidates.filter((change) => change.type === answer.changeType);
   const selectedSegmentCount = new Set(answer.selectedSegmentIds).size;
   const maximumRequiredSegmentCount = Math.max(
     0,
     ...candidates.map((change) => new Set(requiredSegmentIds(change)).size),
   );
+  const needsReview = (feedback: string): StageChangeJudgement => ({
+    isCorrect: false,
+    status: "needs-review",
+    feedback,
+    matchingChangeIds,
+  });
 
-  if (selectedSegmentCount === 0) {
-    return {
-      isCorrect: false,
-      status: "needs-review",
-      feedback: "먼저 달라진 말을 하나 고르고, 그 이유도 골라 보세요.",
-      matchingChangeIds,
-    };
+  if (selectedSegmentCount === 0 || answer.evidenceMeaningUnitIds.length === 0) {
+    return needsReview("먼저 달라진 말을 하나 고르고, 그 이유도 골라 보세요.");
   }
   if (selectedSegmentCount > maximumRequiredSegmentCount) {
-    return {
-      isCorrect: false,
-      status: "needs-review",
-      feedback: "말을 너무 많이 골랐어요. 달라진 말만 남겨 보세요.",
-      matchingChangeIds,
-    };
+    return needsReview("말을 너무 많이 골랐어요. 달라진 말만 남겨 보세요.");
   }
-  if (matchingType.length === 0) {
-    return {
-      isCorrect: false,
-      status: "needs-review",
-      feedback: "고른 말은 다시 살펴볼 수 있어요. 어떻게 달라졌는지 한 번 더 생각해 보세요.",
-      matchingChangeIds,
-    };
-  }
-  const correct = matchingType.some(
+  const matchedChanges = candidates.filter(
     (change) =>
       sameMembers(answer.selectedSegmentIds, requiredSegmentIds(change)) &&
-      answer.evidenceMeaningUnitIds.length > 0 &&
       answer.evidenceMeaningUnitIds.every((id) => change.meaningUnitIds.includes(id)),
   );
 
-  if (correct) {
+  if (matchedChanges.some((change) => change.type === answer.changeType)) {
     return {
       isCorrect: true,
       status: "correct",
@@ -82,18 +68,8 @@ export function judgeStageChange(
       matchingChangeIds,
     };
   }
-  if (matchingType.length > 0) {
-    return {
-      isCorrect: false,
-      status: "needs-review",
-      feedback: "고른 말과 이유를 다시 살펴보고 한 번 더 골라 보세요.",
-      matchingChangeIds,
-    };
+  if (matchedChanges.length > 0) {
+    return needsReview("고른 말은 다시 살펴볼 수 있어요. 어떻게 달라졌는지 한 번 더 생각해 보세요.");
   }
-  return {
-    isCorrect: false,
-    status: "needs-review",
-    feedback: "고른 말과 이유를 다시 살펴보고 한 번 더 골라 보세요.",
-    matchingChangeIds,
-  };
+  return needsReview("고른 말과 이유를 다시 살펴보고 한 번 더 골라 보세요.");
 }
