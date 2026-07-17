@@ -11,18 +11,34 @@ async function startMission(page: import("playwright/test").Page, route: "3~4학
   await page.goto("/");
   await page.keyboard.press("Tab");
   await expect(page.locator(":focus")).toHaveText("정보 손실 통신소");
-  if (route === "5~6학년 도전 활동") await page.getByRole("button", { name: route }).click();
-  await page.getByRole("button", { name: "연습 시작" }).focus();
-  await page.keyboard.press("Enter");
-  await page.getByRole("button", { name: "연습 활동 건너뛰기" }).focus();
-  await page.keyboard.press("Space");
+  const routeButton = page.getByRole("button", { name: route });
+  await routeButton.click();
+  await expect(routeButton).toHaveAttribute("aria-pressed", "true");
+  const startTutorial = page.getByRole("button", { name: "연습 시작" });
+  await startTutorial.focus();
+  await expect(startTutorial).toBeFocused();
+  await startTutorial.press("Enter");
+  await expect(page.getByRole("heading", { name: "연습 활동" })).toBeVisible();
+  const skipTutorial = page.getByRole("button", { name: "연습 활동 건너뛰기" });
+  await expect(skipTutorial).toBeVisible();
+  await skipTutorial.focus();
+  await expect(skipTutorial).toBeFocused();
+  await skipTutorial.press("Space");
+  await expect(page.getByRole("heading", { name: "통신 기록을 열어 보세요" })).toBeVisible();
 }
 
 async function openCase(page: import("playwright/test").Page, title: string) {
-  await page.getByRole("button", { name: title }).focus();
-  await page.keyboard.press("Space");
-  await page.getByRole("button", { name: "바로 다음 문장 비교하기" }).focus();
-  await page.keyboard.press("Enter");
+  const caseButton = page.getByRole("button", { name: title });
+  await caseButton.focus();
+  await expect(caseButton).toBeFocused();
+  await caseButton.press("Space");
+  await expect(page.getByRole("heading", { name: title })).toBeVisible();
+  const compare = page.getByRole("button", { name: "바로 다음 문장 비교하기" });
+  await expect(compare).toBeVisible();
+  await compare.focus();
+  await expect(compare).toBeFocused();
+  await compare.press("Enter");
+  await expect(page.getByRole("heading", { name: "바로 다음 문장을 비교해요" })).toBeVisible();
 }
 
 async function answerChange(page: import("playwright/test").Page, answer: ChangeAnswer) {
