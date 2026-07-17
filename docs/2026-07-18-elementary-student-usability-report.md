@@ -20,7 +20,7 @@
 | `npm run typecheck` | 통과 |
 | `npm run lint` | 통과 |
 | `npm run build` | 통과 |
-| `npm run test:e2e -- --reporter=line` | Chromium 13개 통과 (9.2초) |
+| `npm run test:e2e -- --reporter=line` | Chromium 14/14개 통과 (9.3초, exit 0) |
 
 ## 390×844 화면 캡처 상태
 
