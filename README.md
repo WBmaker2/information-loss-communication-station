@@ -17,11 +17,13 @@ Node.js 22.13 이상에서 실행합니다.
 npm install
 npm run dev
 npm test
+npm run typecheck
 npm run lint
 npm run build
+npm run test:e2e
 ```
 
-`npm test`는 제품 환영 화면의 서버 렌더링, starter 제거, 데이터 항로 노출, 저장·자유 입력 API 부재를 확인합니다. 의미 판정 규칙은 `domain/`의 순수 함수와 고정 사건 데이터로 구성됩니다.
+`npm test`는 제품 환영 화면의 서버 렌더링, starter 제거, 데이터 항로 노출, 저장·자유 입력 API 부재를 확인합니다. `npm run typecheck`는 TypeScript 타입 일치를 검사하고, `npm run test:e2e`는 실제 Chromium에서 안내 활동과 사건 학습 흐름을 확인합니다. 의미 판정 규칙은 `domain/`의 순수 함수와 고정 사건 데이터로 구성됩니다.
 
 ## 개인정보 비수집 원칙
 
