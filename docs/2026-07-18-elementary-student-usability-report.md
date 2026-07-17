@@ -20,13 +20,13 @@
 | `npm run typecheck` | 통과 |
 | `npm run lint` | 통과 |
 | `npm run build` | 통과 |
-| `npm run test:e2e -- --reporter=line` | Chromium 11개 통과 (9.4초) |
+| `npm run test:e2e -- --reporter=line` | Chromium 13개 통과 (9.2초) |
 
 ## 390×844 화면 캡처 상태
 
-루트 권한 Chromium에서 390×844 production 비교 화면을 실제로 캡처했고, `scrollWidth`가 390px인 것을 확인했습니다. 첫 결과 화면 캡처에서는 전달문 화면의 아래 스크롤 위치가 남아 결과 제목이 잘린 것을 발견했습니다. 화면이 바뀔 때 맨 위로 돌아가도록 보완하고, 결과 전환 직전 스크롤 뒤 `window.scrollY === 0`을 확인하는 회귀 E2E를 추가했습니다.
+최종 production 화면을 390×844로 직접 캡처해 [compare-mobile.png](screenshots/v0.3.0/compare-mobile.png)와 [result-mobile.png](screenshots/v0.3.0/result-mobile.png)에 저장했습니다. 두 화면에서 헤더·단계 표시·주요 카드가 정상으로 보이고, 결과 상단 잘림이 사라졌습니다.
 
-현재 `compare-mobile.png`와 `result-mobile.png`는 최종 캡처 전에 덮어쓸 작업 중인 파일입니다. 이 코드·문서 커밋에는 넣지 않고, 다음 검증 단계에서 수정 뒤 실제 화면으로 다시 캡처합니다.
+최종 결과 지표는 viewport `[390, 844]`, `scrollWidth` 390, 결과 높이 992, scroll `[0, 0]`입니다. 따라서 결과 화면은 이전 전달문 화면의 아래 위치를 이어받지 않고 맨 위에서 시작합니다.
 
 ## 교실에서 남은 확인 항목
 
