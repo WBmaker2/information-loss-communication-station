@@ -1,0 +1,22 @@
+import { calculateMeaningLedger, validateSafeRelay } from "../../domain/index";
+import type { TransmissionCase } from "../../domain/index";
+import { firstChangedStageChange } from "../progress";
+
+export function Ledger({ item, onNext }: { item: TransmissionCase; onNext: () => void }) {
+  const names = Object.fromEntries(item.meaningUnits.map((unit) => [unit.id, unit.canonicalMeaning])); const ledger = calculateMeaningLedger(item); const first = firstChangedStageChange(item);
+  return <section className="card"><p className="eyebrow">전체 사슬 점검</p><h1>원문에서 끝 전달문까지</h1><p>처음 달라진 지점: <strong>{first ? first.explanation : "뜻이 유지되었어요."}</strong></p><div className="ledger">{ledger.map((entry, index) => <article key={entry.stageId}><h2>{index === 0 ? "원문" : `${index}차 전달`}</h2><p>✓ 보존: {entry.preservedMeaningUnitIds.map((id) => names[id]).join(" · ") || "없음"}</p><p>− 빠짐: {entry.omittedMeaningUnitIds.map((id) => names[id]).join(" · ") || "없음"}</p><p>+ 추가: {entry.addedMeaningUnitIds.map((id) => names[id]).join(" · ") || "없음"}</p></article>)}</div><button className="primary" onClick={onNext}>안전 전달문 고르기</button></section>;
+}
+
+export function Relay({ item, selected, onToggle, onDone }: { item: TransmissionCase; selected: string[]; onToggle: (id: string) => void; onDone: () => void }) {
+  const check = validateSafeRelay(item, selected); const message = check.valid ? "✓ 필요한 뜻을 모두 지키고, 원문에 없는 뜻도 없어요." : [check.missingMeaningUnitIds.length ? "필수 뜻이 빠졌어요." : "", check.unsupportedMeaningIds.length ? "원문에 없는 뜻이 더해졌어요." : "", check.invalidAudienceOptionIds.length ? "받는 사람에게 맞지 않아요." : ""].filter(Boolean).join(" ");
+  return <section className="card"><p className="eyebrow">안전 전달문</p><h1>문장 블록을 골라 안전하게 다시 보내요</h1><p>하나 이상을 고를 수 있어요. 맞는 답은 여러 개일 수 있습니다.</p><div className="relay-list">{item.relayOptions.map((option) => <button key={option.id} className={selected.includes(option.id) ? "relay selected" : "relay"} aria-pressed={selected.includes(option.id)} onClick={() => onToggle(option.id)}>{option.text}</button>)}</div><p className="feedback" aria-live="polite">{selected.length ? message : "전달문을 하나 이상 골라 보세요."}</p><button className="primary" disabled={!check.valid} onClick={onDone}>사건 기록 완성</button></section>;
+}
+
+export function Result({ item, relay, onNext, onArchive }: { item: TransmissionCase; relay: string[]; onNext: () => void; onArchive: () => void }) {
+  const names = Object.fromEntries(item.meaningUnits.map((unit) => [unit.id, unit.canonicalMeaning])); const first = firstChangedStageChange(item); const recovery = item.relayOptions.filter((option) => relay.includes(option.id)).flatMap((option) => option.meaningUnitIds).filter((id) => item.requiredMeaningUnitIds.includes(id));
+  return <section className="card result"><p className="eyebrow">사건 결과</p><h1>뜻을 지키는 전달 기록을 남겼어요</h1><dl><div><dt>뜻을 지킨 정보</dt><dd>{item.requiredMeaningUnitIds.map((id) => names[id]).join(" · ")}</dd></div><div><dt>처음 달라진 정보</dt><dd>{first?.explanation ?? "없음"}</dd></div><div><dt>복구한 정보</dt><dd>{[...new Set(recovery)].map((id) => names[id]).join(" · ")}</dd></div><div><dt>내가 고른 안전 전달문</dt><dd>{item.relayOptions.filter((option) => relay.includes(option.id)).map((option) => option.text).join(" ")}</dd></div></dl><div className="button-row"><button className="primary" onClick={onNext}>다음 사건으로</button><button onClick={onArchive}>전달 보존 기록 보기</button></div></section>;
+}
+
+export function Archive({ cases, completed, onMission }: { cases: TransmissionCase[]; completed: string[]; onMission: () => void }) {
+  return <section className="card"><p className="eyebrow">전달 보존 기록</p><h1>완료한 사건만 모아 봐요</h1>{completed.length ? <ul className="archive">{cases.filter((item) => completed.includes(item.id)).map((item) => <li key={item.id}>✓ {item.title} · {item.purpose}</li>)}</ul> : <p>아직 완료한 사건이 없어요.</p>}<button className="primary" onClick={onMission}>사건 목록으로</button></section>;
+}
