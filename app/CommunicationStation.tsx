@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TRANSMISSION_CASES, TUTORIAL_CASE, calculateMeaningLedger, judgeStageChange, validateSafeRelay } from "../domain/index";
 import type { ChangeType, GradeRoute, TransmissionCase } from "../domain/index";
+import { canAdvanceTransition, clearCaseSession, firstChangedStageChange, resolvedChangeIdsForAnswer, transitionChanges } from "./progress";
 
 type View = "welcome" | "tutorial" | "mission" | "compare" | "ledger" | "relay" | "result" | "archive";
 type Dialog = "teacher" | "updates" | null;
@@ -19,6 +20,7 @@ export default function CommunicationStation() {
   const [changeType, setChangeType] = useState<ChangeType>("omission");
   const [feedback, setFeedback] = useState("");
   const [relay, setRelay] = useState<string[]>([]);
+  const [resolvedByCase, setResolvedByCase] = useState<Record<string, string[]>>({});
   const [completed, setCompleted] = useState<string[]>([]);
   const [dialog, setDialog] = useState<Dialog>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -27,21 +29,42 @@ export default function CommunicationStation() {
   useEffect(() => { if (dialog) closeRef.current?.focus(); }, [dialog]);
   const toggle = (id: string, values: string[], save: (next: string[]) => void) => save(values.includes(id) ? values.filter((value) => value !== id) : [...values, id]);
   const resetAnswer = () => { setSegments([]); setEvidence([]); setFeedback(""); setChangeType("omission"); };
+  const clearCurrentCase = (nextView: View) => {
+    const cleared = clearCaseSession();
+    setCaseId(cleared.caseId); setTransition(cleared.transition); setSegments(cleared.segments);
+    setEvidence(cleared.evidence); setRelay(cleared.relay); setFeedback(""); setChangeType("omission");
+    setView(nextView);
+  };
   const openCase = (next: TransmissionCase) => { setCaseId(next.id); setTransition(0); resetAnswer(); setRelay([]); setView("mission"); };
   const checkChange = () => {
     if (!item) return;
-    setFeedback(judgeStageChange(item, { fromStageId: item.stages[transition].id, toStageId: item.stages[transition + 1].id, selectedSegmentIds: segments, changeType, evidenceMeaningUnitIds: evidence }).feedback);
+    const answer = { fromStageId: item.stages[transition].id, toStageId: item.stages[transition + 1].id, selectedSegmentIds: segments, changeType, evidenceMeaningUnitIds: evidence };
+    const judgement = judgeStageChange(item, answer);
+    const newlyResolved = resolvedChangeIdsForAnswer(item, transition, answer, judgement.isCorrect);
+    if (!judgement.isCorrect || !newlyResolved.length) { setFeedback(judgement.feedback); return; }
+    const current = resolvedByCase[item.id] ?? [];
+    const nextResolved = [...new Set([...current, ...newlyResolved])];
+    const needed = transitionChanges(item, transition).length;
+    const found = transitionChanges(item, transition).filter((change) => nextResolved.includes(change.id)).length;
+    setResolvedByCase((all) => ({ ...all, [item.id]: nextResolved }));
+    setSegments([]); setEvidence([]); setChangeType("omission");
+    setFeedback(`${judgement.feedback} ${canAdvanceTransition(item, transition, nextResolved) ? "이 전이의 변화를 모두 찾았어요." : `이 전이에서 ${found}/${needed}개를 찾았어요.`}`);
+  };
+  const advanceComparison = () => {
+    const resolved = item ? resolvedByCase[item.id] ?? [] : [];
+    if (!item || !canAdvanceTransition(item, transition, resolved)) { setFeedback("이 전이에서 달라진 뜻을 모두 확인한 뒤 다음으로 갈 수 있어요."); return; }
+    if (transition + 2 < item.stages.length) { setTransition(transition + 1); resetAnswer(); } else setView("ledger");
   };
   return <main className="station-shell">
-    <header className="station-header"><button className="wordmark" onClick={() => setView("welcome")}>정보 손실 통신소</button><p aria-live="polite" aria-current={item && view !== "welcome" ? "step" : undefined}>{route === "grade-3-4" ? "3~4학년 기본 항로" : "5~6학년 확장 항로"}{item && view !== "welcome" ? ` · 사건 ${routeCases.findIndex((entry) => entry.id === item.id) + 1}/${routeCases.length}` : ""}</p><div className="header-actions"><button onClick={() => setDialog("teacher")}>교사용 안내</button><button onClick={() => setDialog("updates")}>업데이트 내역</button></div></header>
-    {view === "welcome" && <Welcome route={route} setRoute={setRoute} onStart={() => setView("tutorial")} />}
+    <header className="station-header"><button className="wordmark" onClick={() => clearCurrentCase("welcome")}>정보 손실 통신소</button><p aria-live="polite" aria-current={item && view !== "welcome" ? "step" : undefined}>{route === "grade-3-4" ? "3~4학년 기본 항로" : "5~6학년 확장 항로"}{item && view !== "welcome" ? ` · 사건 ${routeCases.findIndex((entry) => entry.id === item.id) + 1}/${routeCases.length}` : ""}</p><div className="header-actions"><button onClick={() => setDialog("teacher")}>교사용 안내</button><button onClick={() => setDialog("updates")}>업데이트 내역</button></div></header>
+    {view === "welcome" && <Welcome route={route} setRoute={(nextRoute) => { clearCurrentCase("welcome"); setRoute(nextRoute); }} onStart={() => setView("tutorial")} />}
     {view === "tutorial" && <Tutorial onDone={() => setView("mission")} />}
-    {view === "mission" && <Mission cases={routeCases} current={item} completed={completed} onOpen={openCase} onCompare={() => setView("compare")} />}
-    {view === "compare" && item && <Compare item={item} transition={transition} segments={segments} evidence={evidence} changeType={changeType} feedback={feedback} onSegment={(id) => toggle(id, segments, setSegments)} onEvidence={(id) => toggle(id, evidence, setEvidence)} onType={setChangeType} onCheck={checkChange} onNext={() => { if (transition + 2 < item.stages.length) { setTransition(transition + 1); resetAnswer(); } else setView("ledger"); }} />}
+    {view === "mission" && <Mission cases={routeCases} current={item} completed={completed} onOpen={openCase} onCompare={() => setView("compare")} onBack={() => clearCurrentCase("mission")} />}
+    {view === "compare" && item && <Compare item={item} transition={transition} resolvedIds={resolvedByCase[item.id] ?? []} segments={segments} evidence={evidence} changeType={changeType} feedback={feedback} onSegment={(id) => toggle(id, segments, setSegments)} onEvidence={(id) => toggle(id, evidence, setEvidence)} onType={setChangeType} onCheck={checkChange} onNext={advanceComparison} />}
     {view === "ledger" && item && <Ledger item={item} onNext={() => setView("relay")} />}
     {view === "relay" && item && <Relay item={item} selected={relay} onToggle={(id) => toggle(id, relay, setRelay)} onDone={() => { setCompleted((ids) => ids.includes(item.id) ? ids : [...ids, item.id]); setView("result"); }} />}
-    {view === "result" && item && <Result item={item} relay={relay} onNext={() => setView("mission")} onArchive={() => setView("archive")} />}
-    {view === "archive" && <Archive cases={TRANSMISSION_CASES} completed={completed} onMission={() => setView("mission")} />}
+    {view === "result" && item && <Result item={item} relay={relay} onNext={() => clearCurrentCase("mission")} onArchive={() => clearCurrentCase("archive")} />}
+    {view === "archive" && <Archive cases={TRANSMISSION_CASES} completed={completed} onMission={() => clearCurrentCase("mission")} />}
     {dialog && <InfoDialog kind={dialog} closeRef={closeRef} onClose={() => setDialog(null)} />}
   </main>;
 }
@@ -55,14 +78,15 @@ function Tutorial({ onDone }: { onDone: () => void }) {
   return <section className="card lesson"><p className="eyebrow">안내 활동 · {step + 1}/2</p><h1>{TUTORIAL_CASE.title}</h1><p>{TUTORIAL_CASE.purpose}</p><div className="comparison"><MessageCard title="앞 문장" stage={stages[step]} /><MessageCard title="다음 문장" stage={stages[step + 1]} /></div><aside className="hint"><strong>{step === 0 ? "✓ 뜻 유지" : "! 범위가 바뀜"}</strong><p>{TUTORIAL_CASE.expectedChanges[step].explanation}</p></aside><div className="button-row"><button onClick={() => setStep(0)}>다시 보기</button><button className="primary" onClick={() => step === 0 ? setStep(1) : onDone()}>{step === 0 ? "다음 비교" : "사건 임무로"}</button></div><button className="text-button" onClick={onDone}>안내 활동 건너뛰기</button></section>;
 }
 
-function Mission({ cases, current, completed, onOpen, onCompare }: { cases: TransmissionCase[]; current: TransmissionCase | null; completed: string[]; onOpen: (item: TransmissionCase) => void; onCompare: () => void }) {
-  if (current) return <section className="card mission"><p className="eyebrow">사건 임무</p><h1>{current.title}</h1><p className="lead">{current.purpose}</p><dl className="facts"><div><dt>보내는 역할</dt><dd>{current.stages[0].senderRole}</dd></div><div><dt>받는 역할</dt><dd>{current.stages[0].audienceRole}</dd></div><div><dt>매체</dt><dd>{current.stages.map((stage) => stage.medium).join(" → ")}</dd></div></dl><h2>원문 뜻 펼치기</h2><div className="meaning-list">{current.meaningUnits.map((unit) => <span key={unit.id} className={unit.requiredForPurpose ? "meaning required" : "meaning"}><b>{labels[unit.kind]}</b> {unit.canonicalMeaning}{unit.requiredForPurpose ? " · 필수" : " · 도움"}</span>)}</div><button className="primary" onClick={onCompare}>인접 전달문 비교하기</button></section>;
+function Mission({ cases, current, completed, onOpen, onCompare, onBack }: { cases: TransmissionCase[]; current: TransmissionCase | null; completed: string[]; onOpen: (item: TransmissionCase) => void; onCompare: () => void; onBack: () => void }) {
+  if (current) return <section className="card mission"><p className="eyebrow">사건 임무</p><h1>{current.title}</h1><p className="lead">{current.purpose}</p><dl className="facts"><div><dt>보내는 역할</dt><dd>{current.stages[0].senderRole}</dd></div><div><dt>받는 역할</dt><dd>{current.stages[0].audienceRole}</dd></div><div><dt>매체</dt><dd>{current.stages.map((stage) => stage.medium).join(" → ")}</dd></div></dl><h2>원문 뜻 펼치기</h2><div className="meaning-list">{current.meaningUnits.map((unit) => <span key={unit.id} className={unit.requiredForPurpose ? "meaning required" : "meaning"}><b>{labels[unit.kind]}</b> {unit.canonicalMeaning}{unit.requiredForPurpose ? " · 필수" : " · 도움"}</span>)}</div><div className="button-row"><button className="primary" onClick={onCompare}>인접 전달문 비교하기</button><button onClick={onBack}>사건 목록으로</button></div></section>;
   return <section className="card"><p className="eyebrow">사건 목록</p><h1>통신 기록을 열어 보세요</h1><p>완료한 사건은 ✓로 표시됩니다. 어떤 사건부터 해도 괜찮아요.</p><div className="case-list">{cases.map((item, index) => <button key={item.id} className="case-button" onClick={() => onOpen(item)}><span>{completed.includes(item.id) ? "✓ 완료" : `기록 ${index + 1}`}</span><strong>{item.title}</strong><small>{item.purpose}</small></button>)}</div></section>;
 }
 
-function Compare({ item, transition, segments, evidence, changeType, feedback, onSegment, onEvidence, onType, onCheck, onNext }: { item: TransmissionCase; transition: number; segments: string[]; evidence: string[]; changeType: ChangeType; feedback: string; onSegment: (id: string) => void; onEvidence: (id: string) => void; onType: (type: ChangeType) => void; onCheck: () => void; onNext: () => void }) {
+function Compare({ item, transition, resolvedIds, segments, evidence, changeType, feedback, onSegment, onEvidence, onType, onCheck, onNext }: { item: TransmissionCase; transition: number; resolvedIds: string[]; segments: string[]; evidence: string[]; changeType: ChangeType; feedback: string; onSegment: (id: string) => void; onEvidence: (id: string) => void; onType: (type: ChangeType) => void; onCheck: () => void; onNext: () => void }) {
   const from = item.stages[transition], to = item.stages[transition + 1];
-  return <section className="card compare"><p className="eyebrow">인접 단계 비교 · {transition + 1}/{item.stages.length - 1}</p><h1>바로 다음 전달문만 비교해요</h1><div className="compare-layout"><div className="comparison"><MessageCard title={`이전 · ${from.medium}`} stage={from} /><MessageCard title={`다음 · ${to.medium}`} stage={to} selectable selected={segments} onSelect={onSegment} /></div><aside className="meaning-reference"><h2>뜻 장부</h2>{item.meaningUnits.map((unit) => <p key={unit.id}><b>{labels[unit.kind]}</b> {unit.canonicalMeaning}</p>)}</aside></div><fieldset><legend>다음 문장에서 달라진 표현 조각을 눌러요</legend><p className="muted">선택한 조각: {segments.length ? `${segments.length}개` : "아직 없음"}</p></fieldset><fieldset><legend>변화 종류를 하나 고르세요</legend><div className="choice-row">{(["omission", "unsupported-addition", "meaning-shift", "meaning-preserving"] as ChangeType[]).map((type) => <label key={type}><input type="radio" name="change-type" checked={changeType === type} onChange={() => onType(type)} />{changeNames[type]}</label>)}</div></fieldset><fieldset><legend>근거가 되는 뜻을 모두 고르세요</legend><div className="check-grid">{item.meaningUnits.map((unit) => <label key={unit.id}><input type="checkbox" checked={evidence.includes(unit.id)} onChange={() => onEvidence(unit.id)} />{labels[unit.kind]} · {unit.canonicalMeaning}</label>)}</div></fieldset><div className="button-row"><button className="primary" onClick={onCheck}>판정 확인</button><button onClick={onNext}>{transition + 2 < item.stages.length ? "다음 비교" : "전체 사슬 점검"}</button></div><p className="feedback" aria-live="polite">{feedback}</p></section>;
+  const expected = transitionChanges(item, transition); const resolved = new Set(resolvedIds); const canAdvance = canAdvanceTransition(item, transition, resolvedIds);
+  return <section className="card compare"><p className="eyebrow">인접 단계 비교 · {transition + 1}/{item.stages.length - 1}</p><h1>바로 다음 전달문만 비교해요</h1><div className="compare-layout"><div className="comparison"><MessageCard title={`이전 · ${from.medium}`} stage={from} /><MessageCard title={`다음 · ${to.medium}`} stage={to} selectable selected={segments} onSelect={onSegment} /></div><aside className="meaning-reference"><h2>뜻 장부</h2>{item.meaningUnits.map((unit) => <p key={unit.id}><b>{labels[unit.kind]}</b> {unit.canonicalMeaning}</p>)}</aside></div><aside className="progress-checklist" aria-live="polite"><strong>찾은 변화 {expected.filter((change) => resolved.has(change.id)).length}/{expected.length}</strong><ul>{expected.map((change) => <li key={change.id}>{resolved.has(change.id) ? "✓ 확인함" : "○ 아직 확인"} · {changeNames[change.type]}</li>)}</ul></aside><fieldset><legend>다음 문장에서 달라진 표현 조각을 눌러요</legend><p className="muted">선택한 조각: {segments.length ? `${segments.length}개` : "아직 없음"}</p></fieldset><fieldset><legend>변화 종류를 하나 고르세요</legend><div className="choice-row">{(["omission", "unsupported-addition", "meaning-shift", "meaning-preserving"] as ChangeType[]).map((type) => <label key={type}><input type="radio" name="change-type" checked={changeType === type} onChange={() => onType(type)} />{changeNames[type]}</label>)}</div></fieldset><fieldset><legend>근거가 되는 뜻을 모두 고르세요</legend><div className="check-grid">{item.meaningUnits.map((unit) => <label key={unit.id}><input type="checkbox" checked={evidence.includes(unit.id)} onChange={() => onEvidence(unit.id)} />{labels[unit.kind]} · {unit.canonicalMeaning}</label>)}</div></fieldset><div className="button-row"><button className="primary" onClick={onCheck}>판정 확인</button><button disabled={!canAdvance} onClick={onNext}>{transition + 2 < item.stages.length ? "다음 비교" : "전체 사슬 점검"}</button></div><p className="feedback" aria-live="polite">{feedback}</p></section>;
 }
 
 function MessageCard({ title, stage, selectable = false, selected = [], onSelect }: { title: string; stage: TransmissionCase["stages"][number]; selectable?: boolean; selected?: string[]; onSelect?: (id: string) => void }) {
@@ -70,7 +94,7 @@ function MessageCard({ title, stage, selectable = false, selected = [], onSelect
 }
 
 function Ledger({ item, onNext }: { item: TransmissionCase; onNext: () => void }) {
-  const names = Object.fromEntries(item.meaningUnits.map((unit) => [unit.id, unit.canonicalMeaning])); const ledger = calculateMeaningLedger(item); const first = item.expectedChanges[0];
+  const names = Object.fromEntries(item.meaningUnits.map((unit) => [unit.id, unit.canonicalMeaning])); const ledger = calculateMeaningLedger(item); const first = firstChangedStageChange(item);
   return <section className="card"><p className="eyebrow">전체 사슬 점검</p><h1>원문에서 끝 전달문까지</h1><p>처음 달라진 지점: <strong>{first ? first.explanation : "뜻이 유지되었어요."}</strong></p><div className="ledger">{ledger.map((entry, index) => <article key={entry.stageId}><h2>{index === 0 ? "원문" : `${index}차 전달`}</h2><p>✓ 보존: {entry.preservedMeaningUnitIds.map((id) => names[id]).join(" · ") || "없음"}</p><p>− 빠짐: {entry.omittedMeaningUnitIds.map((id) => names[id]).join(" · ") || "없음"}</p><p>+ 추가: {entry.addedMeaningUnitIds.map((id) => names[id]).join(" · ") || "없음"}</p></article>)}</div><button className="primary" onClick={onNext}>안전 전달문 고르기</button></section>;
 }
 
@@ -80,7 +104,7 @@ function Relay({ item, selected, onToggle, onDone }: { item: TransmissionCase; s
 }
 
 function Result({ item, relay, onNext, onArchive }: { item: TransmissionCase; relay: string[]; onNext: () => void; onArchive: () => void }) {
-  const names = Object.fromEntries(item.meaningUnits.map((unit) => [unit.id, unit.canonicalMeaning])); const first = item.expectedChanges[0]; const recovery = item.relayOptions.filter((option) => relay.includes(option.id)).flatMap((option) => option.meaningUnitIds).filter((id) => item.requiredMeaningUnitIds.includes(id));
+  const names = Object.fromEntries(item.meaningUnits.map((unit) => [unit.id, unit.canonicalMeaning])); const first = firstChangedStageChange(item); const recovery = item.relayOptions.filter((option) => relay.includes(option.id)).flatMap((option) => option.meaningUnitIds).filter((id) => item.requiredMeaningUnitIds.includes(id));
   return <section className="card result"><p className="eyebrow">사건 결과</p><h1>뜻을 지키는 전달 기록을 남겼어요</h1><dl><div><dt>뜻을 지킨 정보</dt><dd>{item.requiredMeaningUnitIds.map((id) => names[id]).join(" · ")}</dd></div><div><dt>처음 달라진 정보</dt><dd>{first?.explanation ?? "없음"}</dd></div><div><dt>복구한 정보</dt><dd>{[...new Set(recovery)].map((id) => names[id]).join(" · ")}</dd></div><div><dt>내가 고른 안전 전달문</dt><dd>{item.relayOptions.filter((option) => relay.includes(option.id)).map((option) => option.text).join(" ")}</dd></div></dl><div className="button-row"><button className="primary" onClick={onNext}>다음 사건으로</button><button onClick={onArchive}>전달 보존 기록 보기</button></div></section>;
 }
 

@@ -37,6 +37,9 @@ legend { padding: 0 .35rem; font-weight: 800; }
 .meaning-reference { padding: 1rem; border: 1px solid var(--line); border-radius: 16px; background: #f1f7f5; }
 .meaning-reference p { margin: .35rem 0; font-size: .9rem; }
 .meaning-reference b { color: var(--teal); }
+.progress-checklist { margin: 1rem 0; padding: .75rem 1rem; border-left: 4px solid var(--teal); background: #eef7f4; }
+.progress-checklist ul { margin: .35rem 0 0; padding-left: 1.15rem; }
+.progress-checklist li { font-size: .92rem; }
 .message-card { padding: 1rem; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
 .message-card h2 { margin-bottom: .15rem; }
 .message-card > p { color: #526a7e; font-size: .88rem; }

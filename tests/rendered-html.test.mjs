@@ -38,6 +38,8 @@ test("제품 파일은 starter 흔적, 영구 저장, 자유 입력 없이 작�
   ]);
   assert.doesNotMatch(page + layout + packageJson, /_sites-preview|Starter Project|react-loading-skeleton|codex-preview/);
   assert.doesNotMatch(appSource, /localStorage|sessionStorage|indexedDB|document\.cookie|<input[^>]+type=["']text/i);
+  assert.match(appSource, /clearCurrentCase\("mission"\)/);
+  assert.match(appSource, /onClick=\{onBack\}>사건 목록으로/);
   assert.match(cases, /CASE_ONE[\s\S]*CASE_FIVE/);
   assert.match(cases, /grade-3-4/);
   assert.match(cases, /grade-5-6/);
