@@ -14,7 +14,7 @@ async function startMission(page: import("playwright/test").Page, route: "3~4학
   if (route === "5~6학년 도전 활동") await page.getByRole("button", { name: route }).click();
   await page.getByRole("button", { name: "연습 시작" }).focus();
   await page.keyboard.press("Enter");
-  await page.getByRole("button", { name: "안내 활동 건너뛰기" }).focus();
+  await page.getByRole("button", { name: "연습 활동 건너뛰기" }).focus();
   await page.keyboard.press("Space");
 }
 
@@ -42,7 +42,7 @@ test("3~4학년 사건 1의 두 빠짐을 복구해 결과와 보존 기록까�
   await page.getByRole("button", { name: "다음 비교" }).focus();
   await page.keyboard.press("Enter");
   await answerChange(page, { segment: "비가 오면 체육관에서 만나요.", evidence: "조건 · 비가 오면 체육관" });
-  await page.getByRole("button", { name: "전체 사슬 점검" }).click();
+  await page.getByRole("button", { name: "처음부터 끝까지 보기" }).click();
   await page.getByRole("button", { name: "안전 전달문 고르기" }).click();
   const unsafeRelay = page.getByRole("button", { name: "금요일 2시에 운동장에 모여요." });
   await unsafeRelay.click();
@@ -138,7 +138,7 @@ test("5~6학년 사건에서 예정이 확정으로 바뀐 것을 찾아 안전 
     type: "뜻이 바뀜",
     evidence: "확실성 · 예정",
   });
-  await page.getByRole("button", { name: "전체 사슬 점검" }).click();
+  await page.getByRole("button", { name: "처음부터 끝까지 보기" }).click();
   await page.getByRole("button", { name: "안전 전달문 고르기" }).click();
   await page.getByRole("button", { name: "다음 주 방과 후 일정은 화요일로 바뀔 예정이에요. 월요일에 담당 선생님 안내로 최종 확인해요." }).click();
   await page.getByRole("button", { name: "사건 기록 완성" }).click();
@@ -173,7 +173,7 @@ test("사건 5의 두 안전 전달문과 접근성·화면·네트워크 경계
     type: "없던 내용이 생김",
     evidence: "도움 정보 · 손전등 준비",
   });
-  await page.getByRole("button", { name: "전체 사슬 점검" }).click();
+  await page.getByRole("button", { name: "처음부터 끝까지 보기" }).click();
   await page.getByRole("button", { name: "안전 전달문 고르기" }).click();
 
   const oneSentence = page.getByRole("button", { name: "비상 안내가 있을 때만 담당 안내문에서 확인된 내용을 금요일 오전 가상 방송실에서 방송으로 전달해요." });
@@ -198,19 +198,28 @@ test("사건 5의 두 안전 전달문과 접근성·화면·네트워크 경계
   expect([...new Set(requests.map((url) => new URL(url).origin))]).toEqual([new URL(page.url()).origin]);
 });
 
-test("선택 복구: 연습에서 고른 문장과 이유를 모두 지울 수 있다", async ({ page }) => {
+test("선택 복구: 연습에서 정답 확인 뒤와 과다 선택 뒤 고른 것을 모두 지울 수 있다", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "연습 시작" }).click();
+
+  await page.getByRole("button", { name: "모둠별로", exact: true }).click();
+  await page.getByLabel("누가 · 각 모둠").check();
+  await page.getByRole("button", { name: "내 답 확인" }).click();
+  await expect(page.locator(".feedback")).not.toHaveText("");
+  await expect(page.getByRole("button", { name: "다음 비교" })).toBeEnabled();
+  await page.getByRole("button", { name: "고른 것 지우기" }).click();
+
+  await expect(page.getByText("문장 선택 0개 · 이유 선택 0개")).toBeVisible();
+  await expect(page.getByLabel("누가 · 각 모둠")).not.toBeChecked();
+  await expect(page.locator(".feedback")).toHaveText("");
+  await expect(page.getByRole("button", { name: "다음 비교" })).toBeDisabled();
 
   await page.getByRole("button", { name: "각 모둠은", exact: true }).click();
   await page.getByRole("button", { name: "모둠별로", exact: true }).click();
   await page.getByLabel("누가 · 각 모둠").check();
   await expect(page.getByText("문장 선택 2개 · 이유 선택 1개")).toBeVisible();
   await page.getByRole("button", { name: "고른 것 지우기" }).click();
-
   await expect(page.getByText("문장 선택 0개 · 이유 선택 0개")).toBeVisible();
-  await expect(page.getByLabel("누가 · 각 모둠")).not.toBeChecked();
-  await expect(page.locator(".feedback")).toHaveText("");
 });
 
 test("선택 복구: 답을 확인하기 전 다음 버튼은 안내와 연결된다", async ({ page }) => {
@@ -221,6 +230,13 @@ test("선택 복구: 답을 확인하기 전 다음 버튼은 안내와 연결�
   await expect(next).toBeDisabled();
   await expect(page.getByText("먼저 내 답 확인을 눌러요.")).toBeVisible();
   await expect(next).toHaveAttribute("aria-describedby", "tutorial-next-guidance");
+
+  await startMission(page, "3~4학년 기본 활동");
+  await openCase(page, "비 오는 날 모임 장소");
+  const compareNext = page.getByRole("button", { name: "다음 비교" });
+  await expect(compareNext).toBeDisabled();
+  await expect(page.getByText("먼저 내 답 확인을 눌러요.")).toBeVisible();
+  await expect(compareNext).toHaveAttribute("aria-describedby", "compare-next-guidance");
 });
 
 test("뒤로가기: 연습은 시작 화면으로, 비교는 사건 설명으로 돌아간다", async ({ page }) => {
@@ -230,7 +246,7 @@ test("뒤로가기: 연습은 시작 화면으로, 비교는 사건 설명으로
   await expect(page.getByRole("heading", { name: "전해지는 동안 달라진 뜻을 찾아 안전하게 다시 보내요" })).toBeVisible();
 
   await page.getByRole("button", { name: "연습 시작" }).click();
-  await page.getByRole("button", { name: "안내 활동 건너뛰기" }).click();
+  await page.getByRole("button", { name: "연습 활동 건너뛰기" }).click();
   await page.getByRole("button", { name: "비 오는 날 모임 장소" }).click();
   await page.getByRole("button", { name: "인접 전달문 비교하기" }).click();
   await page.getByRole("button", { name: "사건 설명으로" }).click();
@@ -246,9 +262,18 @@ test("뒤로가기: 비교에서 찾은 변화는 유지하고 아직 확인하�
   await page.getByLabel("도움 정보 · 모둠 안내판 앞").check();
   await page.getByRole("button", { name: "내 답 확인" }).click();
   await expect(page.getByText("찾은 변화 1/1")).toBeVisible();
+  await page.getByRole("heading", { name: "다음 · 말" }).locator("..").getByRole("button", { name: "금요일 2시에 운동장에 모여요.", exact: true }).click();
+  await page.getByLabel("언제 · 금요일 2시").check();
+  await page.getByLabel("뜻이 바뀜").check();
+  await page.getByRole("button", { name: "내 답 확인" }).click();
+  await expect(page.locator(".feedback")).not.toHaveText("");
   await page.getByRole("button", { name: "사건 설명으로" }).click();
   await page.getByRole("button", { name: "인접 전달문 비교하기" }).click();
 
   await expect(page.getByText("찾은 변화 1/1")).toBeVisible();
   await expect(page.getByText("문장 선택 0개 · 이유 선택 0개")).toBeVisible();
+  await expect(page.locator(".phrase.pressed")).toHaveCount(0);
+  await expect(page.locator(".check-grid input:checked")).toHaveCount(0);
+  await expect(page.getByLabel("내용이 빠짐")).toBeChecked();
+  await expect(page.locator(".feedback")).toHaveText("");
 });
