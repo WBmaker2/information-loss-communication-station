@@ -1,5 +1,12 @@
 # 테스트 기록
 
+## 2026-07-18 · v0.3.0 최종 리뷰 보완
+
+- RED: 비교 화면에서 `뜻이 바뀜`을 고르고 문장·이유·오답 피드백을 만든 뒤 `고른 것 지우기`를 누르는 E2E가 실패했습니다. 기존 `resetAnswer`가 변화 종류까지 `내용이 빠짐`으로 되돌렸습니다.
+- GREEN: 비교 전용 `clearCurrentSelection`으로 문장·이유·피드백만 비우고 변화 종류는 유지하도록 보완했습니다. 연습 과다 선택 E2E도 실제 `내 답 확인` 뒤 `말을 너무 많이 골랐어요. 달라진 말만 남겨 보세요.`를 확인하고, 지운 뒤 선택과 피드백이 모두 비는지 검증합니다.
+- `npm test`(30개), `npm run typecheck`, `npm run lint`, `npm run build`와 선택 복구 Chromium E2E 3개가 통과했습니다. 전체 Chromium E2E 14개 재실행은 제품 검증 전에 현재 실행 환경의 Chromium MachPort 권한 오류로 시작하지 못해 루트 재검증 대상으로 남겼습니다.
+- 390×844 production 최종 결과 증거는 기존 `docs/screenshots/v0.3.0/result-mobile.png`를 유지하면서, 캐시와 구분되는 [result-mobile-final.png](screenshots/v0.3.0/result-mobile-final.png)로 별도 보존했습니다. viewport `[390, 844]`, `scrollWidth` 390, 결과 높이 996, scroll `[0, 0]`에서 wordmark·관리 버튼·활동/사건 배지·1~5 단계·결과 제목이 모두 보입니다.
+
 ## 2026-07-18 · v0.3.0 릴리스 회귀
 
 - RED: 기존 전체 Chromium E2E를 실행해 이전 오답 피드백 문구 기대와 네이티브 체크박스의 18px 크기 검사에서 실패를 확인했습니다. 소스 점검에서 사건 5의 이전 제목 selector도 현재 학생용 제목으로 갱신했습니다.

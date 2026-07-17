@@ -251,8 +251,29 @@ test("선택 복구: 연습에서 정답 확인 뒤와 과다 선택 뒤 고른 
   await page.getByRole("button", { name: "모둠별로", exact: true }).click();
   await page.getByLabel("누가 · 각 모둠").check();
   await expect(page.getByText("문장 선택 2개 · 이유 선택 1개")).toBeVisible();
+  await page.getByRole("button", { name: "내 답 확인" }).click();
+  await expect(page.getByText("말을 너무 많이 골랐어요. 달라진 말만 남겨 보세요.")).toBeVisible();
   await page.getByRole("button", { name: "고른 것 지우기" }).click();
   await expect(page.getByText("문장 선택 0개 · 이유 선택 0개")).toBeVisible();
+  await expect(page.getByLabel("누가 · 각 모둠")).not.toBeChecked();
+  await expect(page.locator(".feedback")).toHaveText("");
+});
+
+test("선택 복구: 비교에서 고른 변화 종류는 선택을 지워도 유지한다", async ({ page }) => {
+  await startMission(page, "3~4학년 기본 활동");
+  await openCase(page, "비 오는 날 모임 장소");
+
+  await page.getByRole("button", { name: "모둠 안내판 앞에 모여요.", exact: true }).click();
+  await page.getByLabel("뜻이 바뀜").check();
+  await page.getByLabel("도움 정보 · 모둠 안내판 앞").check();
+  await page.getByRole("button", { name: "내 답 확인" }).click();
+  await expect(page.locator(".feedback")).not.toHaveText("");
+
+  await page.getByRole("button", { name: "고른 것 지우기" }).click();
+  await expect(page.getByText("문장 선택 0개 · 이유 선택 0개")).toBeVisible();
+  await expect(page.getByLabel("도움 정보 · 모둠 안내판 앞")).not.toBeChecked();
+  await expect(page.locator(".feedback")).toHaveText("");
+  await expect(page.getByLabel("뜻이 바뀜")).toBeChecked();
 });
 
 test("선택 복구: 답을 확인하기 전 다음 버튼은 안내와 연결된다", async ({ page }) => {

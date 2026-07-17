@@ -24,7 +24,7 @@
 
 ## 390×844 화면 캡처 상태
 
-안전 여백 보완 뒤 최종 production 화면을 390×844로 다시 캡처해 [compare-mobile.png](screenshots/v0.3.0/compare-mobile.png)와 [result-mobile.png](screenshots/v0.3.0/result-mobile.png)에 저장했습니다. 결과 화면 상단의 16px 이상 여백 안에 wordmark·관리 버튼·활동/사건 상태·5단계 진행·결과 제목이 모두 보입니다.
+안전 여백 보완 뒤 최종 production 화면을 390×844로 다시 캡처해 [compare-mobile.png](screenshots/v0.3.0/compare-mobile.png), 기존 [result-mobile.png](screenshots/v0.3.0/result-mobile.png), 그리고 캐시와 구분되는 최종 고유 증거 [result-mobile-final.png](screenshots/v0.3.0/result-mobile-final.png)에 저장했습니다. 결과 화면 상단의 16px 이상 여백 안에 wordmark·관리 버튼·활동/사건 상태·5단계 진행·결과 제목이 모두 보입니다.
 
 최종 결과 지표는 viewport `[390, 844]`, `scrollWidth` 390, 결과 높이 996, scroll `[0, 0]`입니다. 따라서 결과 화면은 이전 전달문 화면의 아래 위치를 이어받지 않고 맨 위에서 시작합니다.
 

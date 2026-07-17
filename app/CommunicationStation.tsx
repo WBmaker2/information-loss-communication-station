@@ -55,6 +55,9 @@ export default function CommunicationStation() {
   const resetAnswer = () => {
     setSegments([]); setEvidence([]); setFeedback(""); setChangeType("omission");
   };
+  const clearCurrentSelection = () => {
+    setSegments([]); setEvidence([]); setFeedback("");
+  };
   const clearCurrentCase = (nextView: View) => {
     const cleared = clearCaseSession();
     setCaseId(cleared.caseId); setTransition(cleared.transition); setSegments(cleared.segments);
@@ -125,7 +128,7 @@ export default function CommunicationStation() {
     {view === "welcome" && <Welcome route={route} setRoute={(nextRoute) => { clearCurrentCase("welcome"); setRoute(nextRoute); }} onStart={() => setView("tutorial")} />}
     {view === "tutorial" && <Tutorial onDone={() => setView("mission")} onBack={() => clearCurrentCase("welcome")} />}
     {view === "mission" && <Mission cases={routeCases} current={item} completed={completedRecords.map(({ caseId }) => caseId)} onOpen={openCase} onCompare={() => setView("compare")} onBack={() => clearCurrentCase("mission")} />}
-    {view === "compare" && item && <Compare item={item} transition={transition} resolvedIds={resolvedByCase[item.id] ?? []} segments={segments} evidence={evidence} changeType={changeType} feedback={feedback} onSegment={(id) => toggle(id, segments, setSegments)} onEvidence={(id) => toggle(id, evidence, setEvidence)} onType={setChangeType} onCheck={checkChange} onClear={resetAnswer} onBack={() => { resetAnswer(); setView("mission"); }} onNext={advanceComparison} />}
+    {view === "compare" && item && <Compare item={item} transition={transition} resolvedIds={resolvedByCase[item.id] ?? []} segments={segments} evidence={evidence} changeType={changeType} feedback={feedback} onSegment={(id) => toggle(id, segments, setSegments)} onEvidence={(id) => toggle(id, evidence, setEvidence)} onType={setChangeType} onCheck={checkChange} onClear={clearCurrentSelection} onBack={() => { resetAnswer(); setView("mission"); }} onNext={advanceComparison} />}
     {view === "ledger" && item && <Ledger item={item} onNext={() => setView("relay")} onBack={() => setView("compare")} />}
     {view === "relay" && item && <Relay item={item} selected={relay} onToggle={(id) => toggle(id, relay, setRelay)} onDone={() => { const record = buildCompletedRecord(item, findingsByCase[item.id] ?? [], relay); setCompletedRecords((records) => [...records.filter(({ caseId }) => caseId !== item.id), record]); setView("result"); }} onBack={() => setView("ledger")} />}
     {view === "result" && item && <Result item={item} relay={relay} findings={findingsByCase[item.id] ?? []} onNext={() => clearCurrentCase("mission")} onArchive={() => clearCurrentCase("archive")} />}
