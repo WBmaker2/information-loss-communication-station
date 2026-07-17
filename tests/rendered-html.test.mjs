@@ -52,7 +52,7 @@ test("제품 파일은 starter 흔적, 영구 저장, 자유 입력 없이 작�
   assert.match(globalCss, /\.\/styles\/base\.css/);
   assert.match(globalCss, /\.\/styles\/components\.css/);
   assert.match(globalCss, /\.\/styles\/responsive\.css/);
-  assert.match(compareSource, /빠짐은 <strong>이전<\/strong>/);
+  assert.match(compareSource, /이전 문장에서 사라진 말을 골라요/);
   assert.match(compareSource, /stage=\{from\} selectable/);
   assert.match(tutorialSource, /judgeStageChange\(TUTORIAL_CASE/);
   assert.match(tutorialSource, /disabled=\{!canAdvance\}/);
