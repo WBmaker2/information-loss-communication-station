@@ -232,7 +232,7 @@ const CASE_THREE: TransmissionCase = {
 
 const CASE_FOUR: TransmissionCase = {
   id: "case-4-afterschool-schedule",
-  title: "방과 후 일정은 아직 예정",
+  title: "방과 후 일정은 아직 예정(아직 바뀔 수 있음)",
   purpose: "확정되지 않은 일정과 확인 방법을 정확히 전해요.",
   audienceId: "case-4-participants",
   availableRoutes: ["grade-5-6"],
@@ -241,8 +241,8 @@ const CASE_FOUR: TransmissionCase = {
     unit("case-4-tuesday", "time", "화요일로 바뀔 예정"),
     unit("case-4-monday-check", "time", "월요일에 최종 확인"),
     unit("case-4-teacher", "source", "담당 선생님 안내"),
-    unit("case-4-planned", "certainty", "예정"),
-    unit("case-4-confirmed", "certainty", "확정", false),
+    unit("case-4-planned", "certainty", "예정(아직 바뀔 수 있음)"),
+    unit("case-4-confirmed", "certainty", "확정(이제 정해짐)", false),
   ],
   stages: [
     stage("case-4-original", 0, "notice", [segment("case-4-original-all", "다음 주 방과 후 일정은 화요일로 바뀔 예정이에요. 월요일에 담당 선생님 안내로 최종 확인해요.", ["case-4-next-week", "case-4-tuesday", "case-4-monday-check", "case-4-teacher", "case-4-planned"])]),
@@ -262,8 +262,8 @@ const CASE_FOUR: TransmissionCase = {
 
 const CASE_FIVE: TransmissionCase = {
   id: "case-5-broadcast-handover",
-  title: "가상 학교 방송 인수인계",
-  purpose: "방송 인수인계에서 확인된 조건과 시간을 빠뜨리지 않아요.",
+  title: "가상 학교 방송 이어 전하기",
+  purpose: "방송 내용을 이어 전할 때, 어떤 때인지와 시간을 빠뜨리지 않아요.",
   audienceId: "case-5-broadcast-team",
   availableRoutes: ["grade-5-6"],
   meaningUnits: [

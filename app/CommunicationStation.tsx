@@ -89,13 +89,13 @@ export default function CommunicationStation() {
       return { ...all, [item.id]: [...prior, ...additions] };
     });
     setSegments([]); setEvidence([]); setChangeType("omission");
-    setFeedback(`${judgement.feedback} ${canAdvanceTransition(item, transition, nextResolved) ? "이 전이의 변화를 모두 찾았어요." : `이 전이에서 ${found}/${needed}개를 찾았어요.`}`);
+    setFeedback(`${judgement.feedback} ${canAdvanceTransition(item, transition, nextResolved) ? "이번 비교의 변화를 모두 찾았어요." : `이번 비교에서 ${found}/${needed}개를 찾았어요.`}`);
     return true;
   };
   const advanceComparison = () => {
     const resolved = item ? resolvedByCase[item.id] ?? [] : [];
     if (!item || !canAdvanceTransition(item, transition, resolved)) {
-      setFeedback("이 전이에서 달라진 뜻을 모두 확인한 뒤 다음으로 갈 수 있어요.");
+      setFeedback("이번 비교에서 달라진 뜻을 모두 확인한 뒤 다음으로 갈 수 있어요.");
       return;
     }
     if (transition + 2 < item.stages.length) { setTransition(transition + 1); resetAnswer(); } else setView("ledger");
@@ -116,7 +116,7 @@ export default function CommunicationStation() {
         <div className="header-actions"><button onClick={(event) => openDialog("teacher", event.currentTarget)}>교사용 안내</button><button onClick={(event) => openDialog("updates", event.currentTarget)}>업데이트 내역</button></div>
       </div>
       <p className="header-status" aria-live="polite">
-        <span>{route === "grade-3-4" ? "3~4학년 기본 항로" : "5~6학년 확장 항로"}</span>
+        <span>{route === "grade-3-4" ? "3~4학년 기본 활동" : "5~6학년 도전 활동"}</span>
         {item && workflowStep !== undefined && <span>사건 {routeCases.findIndex((entry) => entry.id === item.id) + 1}/{routeCases.length}</span>}
       </p>
     </header>

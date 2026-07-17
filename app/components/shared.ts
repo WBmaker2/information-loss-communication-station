@@ -1,10 +1,10 @@
 import type { ChangeType, TransmissionStage } from "../../domain/index";
 
 export const changeNames: Record<ChangeType, string> = {
-  omission: "빠짐",
-  "unsupported-addition": "근거 없는 추가",
-  "meaning-shift": "뜻이 달라짐",
-  "meaning-preserving": "뜻 유지",
+  omission: "내용이 빠짐",
+  "unsupported-addition": "없던 내용이 생김",
+  "meaning-shift": "뜻이 바뀜",
+  "meaning-preserving": "같은 뜻",
   unchanged: "달라지지 않음",
 };
 
@@ -14,9 +14,9 @@ export const labels: Record<string, string> = {
   time: "언제",
   place: "어디서",
   quantity: "수량",
-  condition: "조건",
-  certainty: "확실성",
-  source: "출처",
+  condition: "조건(어떤 때인지)",
+  certainty: "확실성(예정인지 확정인지)",
+  source: "출처(누가 알려 줬는지)",
   detail: "도움 정보",
   negation: "아님",
 };

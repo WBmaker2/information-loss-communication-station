@@ -40,6 +40,54 @@ test("인접하지 않은 단계를 비교하면 학생 오답이 아닌 콘텐�
   assert.equal(result.isCorrect, false);
 });
 
+test("답안 상태에 따라 학생이 고칠 수 있는 피드백을 돌려준다", () => {
+  const item = TRANSMISSION_CASES[0];
+  const change = item.expectedChanges.find(({ type }) => type === "omission")!;
+  const answer = {
+    fromStageId: change.fromStageId,
+    toStageId: change.toStageId,
+    changeType: change.type,
+    evidenceMeaningUnitIds: change.meaningUnitIds,
+  };
+
+  const empty = judgeStageChange(item, { ...answer, selectedSegmentIds: [] });
+  assert.equal(empty.feedback, "먼저 달라진 말을 하나 고르고, 그 이유도 골라 보세요.");
+  assert.deepEqual(empty.matchingChangeIds, [change.id]);
+
+  const tooMany = judgeStageChange(item, {
+    ...answer,
+    selectedSegmentIds: [...change.sourceSegmentIds, ...change.targetSegmentIds],
+  });
+  assert.equal(tooMany.feedback, "말을 너무 많이 골랐어요. 달라진 말만 남겨 보세요.");
+  assert.deepEqual(tooMany.matchingChangeIds, [change.id]);
+
+  const wrongType = judgeStageChange(item, {
+    ...answer,
+    selectedSegmentIds: change.sourceSegmentIds,
+    changeType: "meaning-shift",
+  });
+  assert.equal(wrongType.feedback, "고른 말은 다시 살펴볼 수 있어요. 어떻게 달라졌는지 한 번 더 생각해 보세요.");
+  assert.deepEqual(wrongType.matchingChangeIds, [change.id]);
+
+  const correct = judgeStageChange(item, {
+    ...answer,
+    selectedSegmentIds: change.sourceSegmentIds,
+  });
+  assert.equal(correct.feedback, "잘 찾았어요. 고른 말과 이유가 서로 맞아요.");
+  assert.deepEqual(correct.matchingChangeIds, [change.id]);
+});
+
+test("5~6학년 사건의 예정과 확정에는 처음부터 쉬운 풀이가 붙는다", () => {
+  const schedule = TRANSMISSION_CASES.find(({ id }) => id === "case-4-afterschool-schedule")!;
+  const broadcast = TRANSMISSION_CASES.find(({ id }) => id === "case-5-broadcast-handover")!;
+
+  assert.equal(schedule.title, "방과 후 일정은 아직 예정(아직 바뀔 수 있음)");
+  assert.equal(schedule.meaningUnits.find(({ id }) => id === "case-4-planned")?.studentLabel, "예정(아직 바뀔 수 있음)");
+  assert.equal(schedule.meaningUnits.find(({ id }) => id === "case-4-confirmed")?.studentLabel, "확정(이제 정해짐)");
+  assert.equal(broadcast.title, "가상 학교 방송 이어 전하기");
+  assert.equal(broadcast.purpose, "방송 내용을 이어 전할 때, 어떤 때인지와 시간을 빠뜨리지 않아요.");
+});
+
 test("빠진 의미는 omission으로 판정한다", () => {
   const item = TRANSMISSION_CASES[0];
   const change = item.expectedChanges.find(({ type }) => type === "omission")!;

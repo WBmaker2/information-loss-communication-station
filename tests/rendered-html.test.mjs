@@ -20,8 +20,9 @@ test("서버는 정보 손실 통신소 환영 화면을 렌더링한다", async
   const html = await response.text();
   assert.match(html, /<title>정보 손실 통신소<\/title>/);
   assert.match(html, /전해지는 동안 달라진 뜻을 찾아 안전하게 다시 보내요/);
-  assert.match(html, /3~4학년 기본 항로/);
-  assert.match(html, /5~6학년 확장 항로/);
+  assert.match(html, /3~4학년 기본 활동/);
+  assert.match(html, /5~6학년 도전 활동/);
+  assert.doesNotMatch(html, /기본 항로|확장 항로|오늘의 항로/);
   assert.match(html, /개인정보를 모으거나 저장하지 않아요/);
   assert.match(html, /업데이트 내역/);
   assert.doesNotMatch(html, /Your site is taking shape|Building your site|codex-preview|react-loading-skeleton/i);
@@ -29,7 +30,7 @@ test("서버는 정보 손실 통신소 환영 화면을 렌더링한다", async
 
 test("제품 파일은 starter 흔적, 영구 저장, 자유 입력 없이 작게 분리되어 있다", async () => {
   const root = new URL("../", import.meta.url);
-  const [page, layout, packageJson, cases, appSource, globalCss, missionSource, compareSource, tutorialSource] = await Promise.all([
+  const [page, layout, packageJson, cases, appSource, globalCss, missionSource, compareSource, tutorialSource, sharedSource] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
@@ -39,6 +40,7 @@ test("제품 파일은 starter 흔적, 영구 저장, 자유 입력 없이 작�
     readFile(new URL("../app/components/Mission.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/Compare.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/WelcomeTutorial.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/shared.ts", import.meta.url), "utf8"),
   ]);
   assert.doesNotMatch(page + layout + packageJson, /_sites-preview|Starter Project|react-loading-skeleton|codex-preview/);
   assert.doesNotMatch(packageJson, /drizzle|db:generate/);
@@ -54,6 +56,16 @@ test("제품 파일은 starter 흔적, 영구 저장, 자유 입력 없이 작�
   assert.match(compareSource, /stage=\{from\} selectable/);
   assert.match(tutorialSource, /judgeStageChange\(TUTORIAL_CASE/);
   assert.match(tutorialSource, /disabled=\{!canAdvance\}/);
+  assert.match(sharedSource, /omission: "내용이 빠짐"/);
+  assert.match(sharedSource, /"unsupported-addition": "없던 내용이 생김"/);
+  assert.match(sharedSource, /"meaning-shift": "뜻이 바뀜"/);
+  assert.match(sharedSource, /"meaning-preserving": "같은 뜻"/);
+  assert.match(sharedSource, /condition: "조건\(어떤 때인지\)"/);
+  assert.match(sharedSource, /source: "출처\(누가 알려 줬는지\)"/);
+  assert.match(sharedSource, /certainty: "확실성\(예정인지 확정인지\)"/);
+  assert.doesNotMatch(sharedSource, /omission: "빠짐"|근거 없는 추가|뜻이 달라짐|뜻 유지/);
+  assert.doesNotMatch(tutorialSource + appSource, /기본 항로|확장 항로|오늘의 항로|이 전이/);
+  assert.match(cases, /가상 학교 방송 이어 전하기/);
   assert.match(cases, /CASE_ONE[\s\S]*CASE_FIVE/);
   assert.match(cases, /grade-3-4/);
   assert.match(cases, /grade-5-6/);
