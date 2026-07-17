@@ -1,29 +1,115 @@
-# Task 1 Implementer Report
+# Task 1 report: domain model, cases, and deterministic judging
 
-Status: DONE
+## Implemented
 
-- RED: `npm_config_cache=/tmp/codex-npm-cache npm exec -- tsx --test tests/domain.test.ts`에서 새 피드백 및 5~6학년 풀이 테스트 2개 실패 확인.
-- GREEN: 같은 명령 19/19 통과.
-- 전체: `npm_config_cache=/tmp/codex-npm-cache npm test` 28/28 통과.
-- 추가: `npm run typecheck`, `git diff --check` 통과.
-- 자체 검토: 단계 연결, 빈 선택, 과다 선택, 종류 불일치, 정답, 기타 오답 순서와 중복 선택 정답 보존, ID 및 matchingChangeIds 유지 확인.
-- 커밋: `e178229 feat: simplify learner vocabulary and feedback`
-- 변경: `domain/judge.ts`, `domain/cases.ts`, `app/components/shared.ts`, `app/components/WelcomeTutorial.tsx`, `app/CommunicationStation.tsx`, `tests/domain.test.ts`, `tests/rendered-html.test.mjs`.
-- 브라우저 시각 검증은 최종 통합 단계에서 수행 예정.
+- Public domain interfaces for meanings, phrase segments, transmission stages,
+  changes, relay options, cases, grade routes, and result objects.
+- One guided activity and five fixed, fictional cases with explicit grade-route
+  availability, audited stage changes, and safe relay options.
+- Pure content validation, stage-change judging, safe-relay validation, and
+  per-stage meaning-ledger helpers.
+- Focused Node tests for content IDs/stages, omission, unsupported addition,
+  meaning shift, meaning preservation, duplicate/order independence, multiple
+  safe relays, unsafe additions, ledger output, and invalid stage order.
 
-## Fix Report
+## TDD record
 
-### Review fixes
+RED command:
 
-- 문장 선택 또는 이유 선택 중 하나라도 비어 있으면, 빈 선택 안내를 반환하도록 보완했습니다.
-- 종류 불일치는 문장과 이유가 같은 후보 변화에 맞고 변화 종류만 다를 때에만 반환하도록 좁혔습니다.
-- 관련 없는 문장·이유와 틀린 종류 조합은 일반 재검토 안내를 반환합니다.
-- 중복 선택 허용, 기존 정답 규칙, 사건 ID와 `matchingChangeIds`는 유지했습니다.
-- 재검토 응답 생성과 도달 불가 중복 분기를 `needsReview`와 후보 답안 필터로 정리했습니다.
+```sh
+rm -rf .test-domain && ./node_modules/.bin/tsc --noEmit false --outDir .test-domain --module NodeNext --moduleResolution NodeNext --target ES2022 tests/domain.test.ts && node --test .test-domain/tests/domain.test.js
+```
 
-### TDD and verification
+Expected RED result before production code:
 
-- RED: `npm_config_cache=/tmp/codex-npm-cache npm exec -- tsx --test tests/domain.test.ts`에서 문장만 고르고 이유가 빈 새 테스트가 실패하는 것을 확인했습니다.
-- GREEN: 같은 명령 19/19 통과.
-- 전체: `npm_config_cache=/tmp/codex-npm-cache npm test` 28/28 통과.
-- 추가: `npm run typecheck`, `git diff --check` 통과.
+```text
+tests/domain.test.ts(11,8): error TS2307: Cannot find module '../domain/index.js'
+```
+
+GREEN command (same focused command after implementation) passed all 11 tests:
+
+```text
+tests 11
+pass 11
+fail 0
+```
+
+## Verification
+
+- Focused domain test: 11 passed, 0 failed.
+- `npm test`: build completed and the existing rendered HTML test suite passed
+  2 tests.
+- `npm run lint`: passed.
+- `git diff --check`: passed.
+
+## Files changed
+
+- `domain/types.ts`
+- `domain/cases.ts`
+- `domain/validation.ts`
+- `domain/judge.ts`
+- `domain/index.ts`
+- `tests/domain.test.ts`
+- `.superpowers/sdd/task-1-implementation-plan.md`
+- `.superpowers/sdd/task-1-report.md`
+
+## Self-review
+
+- Confirmed every curated case has unique internal IDs, consecutive stage
+  ordering, auditable adjacent changes, and at least one safe relay option.
+- Confirmed event 5 has two structurally different valid safe relays.
+- Confirmed judging normalizes selected IDs to sets, so block/evidence order
+  and duplication do not change the result.
+- No task-scope implementation concerns found.
+
+## Concerns
+
+The repository-wide `./node_modules/.bin/tsc --noEmit` currently fails in
+pre-existing Cloudflare worker files because `cloudflare:workers`, `Fetcher`,
+and `D1Database` types are not configured. The focused domain compilation,
+project build, current tests, and lint all pass. The build also emits existing
+Node `punycode` deprecation and vinext route-classification warnings.
+
+## Reviewer fix: relay provenance and reference validation
+
+### Changes
+
+- Safe relay validation now derives unsupported meanings from the selected
+  option meanings minus the original-stage meanings; it no longer trusts the
+  option metadata as the source of truth.
+- Content validation now rejects relay options whose declared unsupported
+  meanings differ from that computed set.
+- Content validation now validates `allowedParaphraseIds` against selectable
+  phrase-segment or relay-option IDs, and `validForAudienceIds` against the
+  case audience or a stage audience role.
+- Corrected the event 5 unsafe relay metadata to declare both non-original
+  meanings that its text selects.
+
+### Focused TDD evidence
+
+RED command:
+
+```sh
+rm -rf .test-domain && ./node_modules/.bin/tsc --noEmit false --outDir .test-domain --module NodeNext --moduleResolution NodeNext --target ES2022 tests/domain.test.ts && node --test .test-domain/tests/domain.test.js
+```
+
+Before the fix, 3 of 14 tests failed as expected: a known non-original meaning
+with empty unsupported metadata passed safe-relay validation, and invalid
+paraphrase/audience references passed content validation.
+
+After the fix, the same focused command passed:
+
+```text
+tests 14
+pass 14
+fail 0
+```
+
+`npm test` passed its 2 current tests and `npm run lint` passed after the fix.
+
+### Fix files changed
+
+- `domain/cases.ts`
+- `domain/validation.ts`
+- `tests/domain.test.ts`
+- `.superpowers/sdd/task-1-report.md`
