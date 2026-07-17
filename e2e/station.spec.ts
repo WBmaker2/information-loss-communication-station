@@ -258,10 +258,16 @@ test("전체 변화 보기와 전달문 선택 뒤로가기는 찾은 변화와 
   const finish = page.getByRole("button", { name: "활동 마치기" });
   await expect(finish).toBeDisabled();
   await expect(page.getByText("뜻을 모두 지킨 문장을 골라야 활동을 마칠 수 있어요.")).toBeVisible();
+  await expect(page.locator(".feedback")).toContainText("아직 빠진 중요한 뜻: 언제, 어디서, 조건(어떤 때인지).");
   await expect(finish).toHaveAttribute("aria-describedby", "relay-finish-help");
+  const temporaryRelay = page.getByRole("button", { name: "금요일 2시에 운동장에 모여요." });
+  await temporaryRelay.click();
+  await expect(temporaryRelay).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "전체 변화 다시 보기" }).click();
   await expect(page.getByRole("heading", { name: "처음 문장에서 마지막 문장까지" })).toBeVisible();
   await page.getByRole("button", { name: "뜻을 지킨 문장 고르기" }).click();
+  await expect(temporaryRelay).toHaveAttribute("aria-pressed", "true");
+  await temporaryRelay.click();
 
   await page.getByRole("button", { name: "금요일 2시에 운동장 모둠 안내판 앞에서 모여요. 비가 오면 체육관으로 가요." }).click();
   await finish.click();
