@@ -50,7 +50,7 @@ git diff --check         # passed
 
 ## Commit
 
-Commit SHA: pending (commit created after this report is written)
+Commit SHA: `fcc5795a429a9f16c7ee4b91eec5cef6bab1c7cc` (amended below to include this SHA)
 
 커밋 메시지: `feat: add learner recovery and back navigation`
 
