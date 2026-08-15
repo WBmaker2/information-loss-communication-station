@@ -42,3 +42,6 @@ tsconfig.tsbuildinfo
 /.wrangler/
 /outputs/
 /work/
+/.gstack/
+/dist-pages/
+/.playwright-cli/

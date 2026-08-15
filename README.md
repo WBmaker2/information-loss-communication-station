@@ -28,3 +28,13 @@ npm run test:e2e
 ## 개인정보 비수집 원칙
 
 학생 이름, 실제 친구 이야기, 음성, 계정 정보를 입력하거나 전송하지 않습니다. 선택 상태는 브라우저 메모리 안에서만 유지되어 새로고침하면 초기화됩니다. 수업에서는 실제 긴급 안내나 안전 판단을 이 앱으로 대신하지 않습니다.
+
+## GitHub Pages
+
+이 프로젝트는 브라우저 메모리에서만 학습 상태를 관리하는 정적 앱으로
+GitHub Pages에서도 사용할 수 있습니다.
+
+- `npm run build:pages`: GitHub Pages용 정적 사이트 빌드
+- 공개 주소: https://wbmaker2.github.io/information-loss-communication-station/
+- 배포 방식: `.github/workflows/deploy-pages.yml`
+- 정적 진입점: `pages/index.html`
