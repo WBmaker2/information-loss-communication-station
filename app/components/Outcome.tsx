@@ -23,7 +23,7 @@ export function Ledger({ item, onNext, onBack }: { item: TransmissionCase; onNex
       </article>)}
     </div>
     <div className="button-row">
-      <button className="primary" onClick={onNext}>뜻을 지킨 문장 고르기</button>
+      <button className="primary gi-pulse" onClick={onNext}>뜻을 지킨 문장 고르기</button>
       <button onClick={onBack}>비교로 돌아가기</button>
     </div>
   </section>;
@@ -56,7 +56,7 @@ export function Relay({ item, selected, onToggle, onDone, onBack }: { item: Tran
     <p className="feedback" aria-live="polite">{selected.length ? message : initialMessage}</p>
     {!check.valid && <p id="relay-finish-help" className="muted">뜻을 모두 지킨 문장을 골라야 활동을 마칠 수 있어요.</p>}
     <div className="button-row">
-      <button className="primary" disabled={!check.valid} aria-describedby={!check.valid ? "relay-finish-help" : undefined} onClick={onDone}>활동 마치기</button>
+      <button className={check.valid ? "primary gi-pulse" : "primary"} disabled={!check.valid} aria-describedby={!check.valid ? "relay-finish-help" : undefined} onClick={onDone}>활동 마치기</button>
       <button onClick={onBack}>전체 변화 다시 보기</button>
     </div>
   </section>;
@@ -92,7 +92,7 @@ export function Result({ item, relay, findings, onNext, onArchive }: { item: Tra
       </article>)}
     </div>
     <div className="button-row">
-      <button className="primary" onClick={onNext}>다음 사건으로</button>
+      <button className="primary gi-pulse" onClick={onNext}>다음 사건으로</button>
       <button onClick={onArchive}>완료 기록 보기</button>
     </div>
   </section>;
@@ -107,6 +107,6 @@ export function Archive({ cases, records, onMission }: { cases: TransmissionCase
       const first = item.expectedChanges.find((change) => change.id === record.firstChangedId);
       return <li key={record.caseId}><strong>✓ {item.title}</strong><br />처음 변화: {first?.explanation ?? "없음"}<br />확인한 변화: {record.findings.length}개 · {record.findings.map((finding) => changeNames[finding.type]).join(", ")}</li>;
     })}</ul> : <p>아직 완료한 사건이 없어요.</p>}
-    <button className="primary" onClick={onMission}>사건 목록으로</button>
+    <button className="primary gi-pulse" onClick={onMission}>사건 목록으로</button>
   </section>;
 }
