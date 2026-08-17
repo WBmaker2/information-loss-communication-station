@@ -387,3 +387,35 @@ test("뒤로가기: 비교에서 찾은 변화는 유지하고 아직 확인하�
   await expect(page.getByLabel("내용이 빠짐")).toBeChecked();
   await expect(page.locator(".feedback")).toHaveText("");
 });
+
+test("풀이 도움말과 핵심 버튼 주목 효과는 현재 단계에 맞게 보인다", async ({ page }) => {
+  await page.goto("/");
+  const start = page.getByRole("button", { name: "연습 시작" });
+  await expect(start).toHaveClass(/gi-pulse/);
+  await start.click();
+
+  await expect(page.getByRole("heading", { name: "이렇게 찾으면 쉬워요" })).toBeVisible();
+  await expect(page.locator(".solution-steps li")).toHaveCount(5);
+  const tutorialNext = page.getByRole("button", { name: "다음 비교" });
+  await expect(tutorialNext).toBeDisabled();
+  await expect(tutorialNext).not.toHaveClass(/gi-pulse/);
+
+  await page.getByRole("button", { name: "모둠별로", exact: true }).click();
+  await page.getByLabel("누가 · 각 모둠").check();
+  await page.getByRole("button", { name: "내 답 확인" }).click();
+  await expect(tutorialNext).toBeEnabled();
+  await expect(tutorialNext).toHaveClass(/gi-pulse/);
+
+  await tutorialNext.click();
+  await page.getByRole("button", { name: "각자", exact: true }).click();
+  await page.getByLabel("뜻이 바뀜").check();
+  await page.getByLabel("누가 · 각 모둠").check();
+  await page.getByRole("button", { name: "내 답 확인" }).click();
+  await page.getByRole("button", { name: "사건 임무로" }).click();
+  await page.getByRole("button", { name: "비 오는 날 모임 장소" }).click();
+  await page.getByRole("button", { name: "바로 다음 문장 비교하기" }).click();
+
+  await expect(page.getByText(/지금 할 일:/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "내 답 확인" })).toHaveClass(/gi-pulse/);
+  await expect(page.getByRole("button", { name: "다음 비교" })).not.toHaveClass(/gi-pulse/);
+});
