@@ -71,4 +71,11 @@ fallback-reason=앞선 후보가 현재 턴에 runtime-available이 아니어서
 - 회복: 오답 피드백, `고른 것 지우기`, 잘못된 전달문 재클릭 취소 제공
 - 안전: 개인정보 입력·저장 기능을 추가하지 않음
 
-현재 변경은 로컬 작업 트리에 완료되어 있습니다. 이번 요청에는 커밋·푸시·Pages 배포가 포함되지 않았으므로 원격 공개 주소는 기존 배포 결과 확인용으로만 링크했습니다. 배포가 필요하면 별도 release gate에서 커밋·CI·공개 learner path를 다시 확인합니다.
+## 릴리스 확인
+
+- 커밋: [`9c392930`](https://github.com/WBmaker2/information-loss-communication-station/commit/9c3929308230d453024e0eda8340d752855fcfb2)
+- GitHub Actions Pages: [실행 33395412230](https://github.com/WBmaker2/information-loss-communication-station/actions/runs/33395412230) — `build`와 `deploy` 모두 성공
+- 공개 앱: [정보 손실 통신소](https://wbmaker2.github.io/information-loss-communication-station/)
+- 공개 learner path: 320×800에서 시작→연습→사건 1 비교 2회→안전 전달문→완료 기록 흐름을 통과했고, `scrollWidth=320`, 콘솔 오류 0건, JS/CSS 자산 응답 200을 확인함
+
+다음 수업에서 실제 3~4학년 학생에게 “어느 문장을 왜 눌렀는지” 자기 말로 설명하게 하는 후속 확인은 별도로 남아 있습니다.
