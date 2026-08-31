@@ -31,20 +31,30 @@ export function Ledger({ item, onNext, onBack }: { item: TransmissionCase; onNex
 
 export function Relay({ item, selected, onToggle, onDone, onBack }: { item: TransmissionCase; selected: string[]; onToggle: (id: string) => void; onDone: () => void; onBack: () => void }) {
   const check = validateSafeRelay(item, selected);
+  const selectedOptions = item.relayOptions.filter((option) => selected.includes(option.id));
+  const invalidOptions = selectedOptions.filter((option) => !validateSafeRelay(item, [option.id]).valid);
+  const canFinish = check.valid && invalidOptions.length === 0;
   const missingLabels = check.missingMeaningUnitIds
     .map((id) => item.meaningUnits.find((unit) => unit.id === id))
     .flatMap((unit) => unit ? [labels[unit.kind]] : []);
   const missingMessage = missingLabels.length
     ? `아직 빠진 중요한 뜻: ${[...new Set(missingLabels)].join(", ")}.`
     : "";
-  const message = check.valid
+  const invalidSelectionMessage = invalidOptions.length
+    ? "선택한 문장 중 하나에 중요한 뜻이 빠졌어요. 잘못 고른 문장은 다시 눌러 취소하고, 뜻을 모두 지킨 문장만 남겨 보세요."
+    : "";
+  const message = canFinish
     ? "✓ 필요한 뜻을 모두 지켰어요."
     : [
+      invalidSelectionMessage,
       missingMessage,
       check.unsupportedMeaningIds.length ? "처음 문장에 없던 뜻이 더해졌어요." : "",
       check.invalidAudienceOptionIds.length ? "받는 사람에게 맞지 않아요." : "",
     ].filter(Boolean).join(" ");
   const initialMessage = ["전달문을 하나 이상 골라 보세요.", missingMessage].filter(Boolean).join(" ");
+  const finishHelp = invalidOptions.length
+    ? "잘못 고른 문장은 다시 눌러 취소할 수 있어요."
+    : "뜻을 모두 지킨 문장을 골라야 활동을 마칠 수 있어요.";
 
   return <section className="card">
     <p className="eyebrow">다시 보내기</p>
@@ -54,9 +64,9 @@ export function Relay({ item, selected, onToggle, onDone, onBack }: { item: Tran
       {item.relayOptions.map((option) => <button key={option.id} className={selected.includes(option.id) ? "relay selected" : "relay"} aria-pressed={selected.includes(option.id)} onClick={() => onToggle(option.id)}>{option.text}</button>)}
     </div>
     <p className="feedback" aria-live="polite">{selected.length ? message : initialMessage}</p>
-    {!check.valid && <p id="relay-finish-help" className="muted">뜻을 모두 지킨 문장을 골라야 활동을 마칠 수 있어요.</p>}
+    {!canFinish && <p id="relay-finish-help" className="muted">{finishHelp}</p>}
     <div className="button-row">
-      <button className={check.valid ? "primary gi-pulse" : "primary"} disabled={!check.valid} aria-describedby={!check.valid ? "relay-finish-help" : undefined} onClick={onDone}>활동 마치기</button>
+      <button className={canFinish ? "primary gi-pulse" : "primary"} disabled={!canFinish} aria-describedby={!canFinish ? "relay-finish-help" : undefined} onClick={onDone}>활동 마치기</button>
       <button onClick={onBack}>전체 변화 다시 보기</button>
     </div>
   </section>;

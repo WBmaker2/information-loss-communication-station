@@ -353,7 +353,7 @@ test("뒤로가기: 연습은 시작 화면으로, 비교는 사건 설명으로
   await page.goto("/");
   await page.getByRole("button", { name: "연습 시작" }).click();
   await page.getByRole("button", { name: "시작 화면으로" }).click();
-  await expect(page.getByRole("heading", { name: "전해지는 동안 달라진 뜻을 찾아 안전하게 다시 보내요" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "달라진 말을 찾아 뜻을 지켜요" })).toBeVisible();
 
   await page.getByRole("button", { name: "연습 시작" }).click();
   await page.getByRole("button", { name: "연습 활동 건너뛰기" }).click();

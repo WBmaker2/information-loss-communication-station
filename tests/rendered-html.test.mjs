@@ -19,7 +19,7 @@ test("서버는 정보 손실 통신소 환영 화면을 렌더링한다", async
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
   assert.match(html, /<title>정보 손실 통신소<\/title>/);
-  assert.match(html, /전해지는 동안 달라진 뜻을 찾아 안전하게 다시 보내요/);
+  assert.match(html, /달라진 말을 찾아 뜻을 지켜요/);
   assert.match(html, /3~4학년 기본 활동/);
   assert.match(html, /5~6학년 도전 활동/);
   assert.doesNotMatch(html, /기본 항로|확장 항로|오늘의 항로/);
